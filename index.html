@@ -1,0 +1,2232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <!-- Tabler Icons webfont -->
+  <link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <title>TindaTech - Smart Inventory for Sari-Sari Stores</title>
+  <style>
+    /* ===== Theme variables ===== */
+    :root{
+      --bg:#fffdfc;
+      --text:#1f2937;
+      --muted:#8b949e;
+      --brand-1:#fbe2da;
+      --brand-2:#f6c7b9;
+      --brand-3:#f1b19d;
+      --card:#ffffff;
+      --chip:#ffffff;
+      --chip-border:#f0d6cc;
+      --chip-active:#ffe9e1;
+      --chip-active-border:#f2b19d;
+      --accent:#e77a5e;
+      --shadow:0 14px 28px rgba(16,24,40,.08), 0 2px 4px rgba(16,24,40,.05);
+      --ring:0 0 0 3px rgba(231,122,94,.15);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 0;
+    }
+    body.cart-active { padding-bottom: 160px; } /* leave room for cart bar */
+
+    .app-shell {
+      max-width: 480px;
+      margin: 0 auto;
+      background: white;
+      min-height: 100vh;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .container { overflow-x: hidden; }
+
+    /* --- Header (peach gradient) --- */
+    .header {
+      background: linear-gradient(135deg,var(--brand-1) 0%,var(--brand-2) 50%,var(--brand-3) 100%);
+      color:#2b2b2b;
+      padding: 20px 16px 68px 16px;
+      text-align: left;
+      border-bottom-right-radius: 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+    .brand-logo { height: 28px; display: block; }
+    .header-text p { opacity: .9; font-size: .78rem; letter-spacing: .2px; }
+    .header-icon i { font-size: 2.2rem; line-height: 1; }
+
+    .header-date{
+      position:absolute; right:16px; top:10px; text-align:right;
+      font-size:.78rem; line-height:1.1; font-weight:700;
+    }
+    .header-date .weekday{ color:#2b2b2b; }
+    .header-date .monthday{ color:#3c3c3c; font-weight:600; }
+
+    /* --- Stats Cards --- */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 0 15px;
+      background: none;
+      margin-top: -36px;
+      position: relative;
+      z-index: 10;
+    }
+    .stat-card {
+      background: var(--card);
+      padding: 15px 10px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      border: 1px solid #f1e4de;
+    }
+    .stat-value { font-size: 1.6em; font-weight: 800; color: #111827; }
+    .stat-label { font-size: 0.7em; color: #7a7a7a; margin-top: 5px; text-transform: uppercase; font-weight: 600; }
+
+    /* --- Tabs (pills) --- */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      background: transparent;
+      padding: 6px 12px;
+      margin: 18px 12px 0 12px;
+      border-radius: 10px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
+      flex: 1 0 auto;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      padding: 10px 12px;
+      background: var(--chip);
+      border: 1px solid var(--chip-border);
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 700;
+      color: #5b5b5b;
+      transition: all 0.2s ease;
+    }
+    .tab i { font-size: 1.1em; }
+    .tab:hover { transform: translateY(-1px); }
+    .tab.active {
+      background: var(--chip-active);
+      color: #7b3a2a;
+      border-color: var(--chip-active-border);
+      box-shadow: var(--ring);
+    }
+
+    /* --- Content --- */
+    .content { padding: 20px 15px; min-height: 400px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* --- Section headings and divider --- */
+    .section-divider{
+      height:1px; background:#efe2dc; border:0; width:100%; margin:10px 0 16px;
+    }
+
+    /* --- Quick Access --- */
+    .quick-access-header {
+      background: #fff;
+      color: #2b2b2b;
+      padding: 10px 15px;
+      border-radius: 10px 10px 0 0;
+      font-weight: 700;
+      font-size: 1em;
+      border:1px solid #f1e4de;
+    }
+    .quick-access-header i { margin-right:6px; }
+    .quick-access-grid {
+      background: #fff;
+      padding: 15px;
+      border-radius: 0 0 10px 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 15px;
+      border:1px solid #f1e4de;
+      border-top:0;
+    }
+    .quick-access-item {
+      background: white;
+      border: 1px solid #efe2dc;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      transition: all 0.2s ease;
+      color: #343a40;
+      box-shadow:0 4px 14px rgba(0,0,0,.04);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .quick-access-name { font-weight: 700; font-size: 0.9em; margin-bottom: 5px; }
+    .quick-access-details { font-size: 0.75em; color: #6c757d; margin: 5px 0; }
+    .quick-sell-btn {
+        padding: 6px 12px;
+        font-size: 0.85em;
+        width: 100%;
+        margin-top: 8px;
+    }
+
+    /* --- Inventory Controls --- */
+    .inventory-controls {
+      background: #fff;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      border: 1px solid #f1e4de;
+    }
+    .search-row{ display:flex; gap:10px; align-items:center; }
+    .search-input {
+      width: 100%;
+      padding: 12px 16px 12px 38px;
+      border: 1px solid #e8d9d2;
+      border-radius: 999px;
+      font-size: 1em;
+      color: #495057;
+      background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="%239aa1a8" viewBox="0 0 24 24"><path d="M10 2a8 8 0 1 1-5.292 13.894l-3.407 3.407a1 1 0 1 1-1.414-1.414l3.407-3.407A8 8 0 0 1 10 2zm0 2a6 6 0 1 0 0 12A6 6 0 0 0 10 4z"/></svg>') no-repeat 12px center;
+      transition: all 0.2s ease;
+    }
+    .search-input:focus { outline: none; border-color: #e9a890; box-shadow: var(--ring); }
+
+    .category-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top:10px;
+    }
+    .filter-chip {
+      padding: 8px 12px;
+      border: 1px solid #efdfd8;
+      background: white;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 700;
+      font-size: 0.9em;
+      color: #495057;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .filter-chip i { font-size: 1.05em; }
+    .filter-chip:hover { background: #fff4ef; transform: translateY(-1px); }
+    .filter-chip.active { background: var(--chip-active); color: #7b3a2a; border-color: var(--chip-active-border); }
+
+    /* --- Category Divider --- */
+    .category-divider {
+      background: #fff;
+      padding: 10px 15px;
+      margin: 15px 0 10px;
+      border-radius: 8px;
+      font-weight: 700;
+      color: #495057;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #efe2dc;
+    }
+    .category-divider i { font-size: 1.05em; }
+    .category-count {
+      margin-left: auto;
+      background: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.85em;
+      color: #6c757d;
+      border: 1px solid #ced4da;
+    }
+
+    /* --- Product List --- */
+    .product-list { display: flex; flex-direction: column; gap: 10px; }
+    .product-item {
+      background: white;
+      border: 1px solid #efe2dc;
+      border-radius: 12px;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s ease;
+      color: #343a40;
+      box-shadow:0 4px 16px rgba(0,0,0,.04);
+    }
+    .product-item:hover { border-color: #e7b8a2; background-color: #fff8f5; }
+    .product-info { flex: 1; }
+    .product-name { font-weight: 700; color: #212529; margin-bottom: 5px; display:flex; align-items:center; gap:6px; }
+    .product-details { font-size: 0.85em; color: #7d7d7d; }
+    .product-prediction { font-size: 0.75em; color: #7d7d7d; margin-top: 3px; font-style: italic; }
+    .product-actions { display: flex; gap: 8px; align-items: center; }
+    .stock-count { font-weight: bold; color: #4b4b4b; min-width: 30px; text-align: center; background: #faf4f1; padding: 5px; border-radius: 8px; }
+    .btn-action {
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: all 0.2s ease;
+      display:inline-flex; align-items:center; gap:6px;
+    }
+    .btn-action:hover { transform: translateY(-1px) scale(1.03); }
+    .btn-action:active { transform: scale(0.98); }
+    .btn-sell { background: #16a34a; border: 1px solid #138f41; box-shadow:0 6px 18px rgba(22,163,74,.18); }
+    .btn-edit { background: #0ea5e9; border: 1px solid #0c8ac9; box-shadow:0 6px 18px rgba(14,165,233,.18); }
+
+    /* --- Alert Box --- */
+    .alert-box {
+      background: #fff7e6;
+      border: 1px solid #ffe2a8;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      animation: slideIn 0.5s ease;
+      color: #85640a;
+    }
+    .alert-title { font-weight: bold; color: #85640a; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+    .alert-message { color: #664d03; font-size: 0.9em; line-height: 1.4; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+
+    /* --- Add Product Form --- */
+    .add-product-form { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #e0e0e0; }
+    .form-group { margin-bottom: 15px; }
+    .form-label { display: block; margin-bottom: 5px; font-weight: 700; color: #495057; font-size: 0.9em; }
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      font-size: 1em;
+      transition: all 0.2s ease;
+      color: #495057;
+      background-color: white;
+    }
+    .form-input:focus { outline: none; border-color: #e9a890; box-shadow: var(--ring); }
+    .btn-primary {
+      background: #343a40;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .btn-primary:hover { background: #23272b; transform: translateY(-1px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    .btn-secondary { background: #e9ecef; color: #212529; border: 1px solid #ced4da; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; display:inline-flex; align-items:center; gap:8px; }
+    .btn-secondary:hover { background: #dee2e6; }
+    .btn-warning { background: #f59e0b; color: white; border: 1px solid #d97706; padding: 12px 24px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; display:inline-flex; align-items:center; gap:8px; }
+    .btn-warning:hover { background: #d97706; }
+    .btn-danger { background:#ef4444; color:white; border:none; padding:10px 16px; border-radius:10px; font-weight:700; cursor:pointer; }
+    .btn-danger:hover { background:#dc2626; }
+
+    /* --- Category Quick Add --- */
+    .category-section { background: #fff; border-radius: 12px; margin-bottom: 15px; overflow: hidden; border: 1px solid #e0e0e0; }
+    .category-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; cursor: pointer; transition: all 0.2s ease; color: #212529; font-weight: 600; }
+    .category-header:hover { background: #fff4ef; }
+    .category-header span:first-child { font-weight: 700; font-size: 1.05em; display:flex; align-items:center; gap:8px; }
+    .category-preview { font-size: 0.85em; color: #6c757d; font-style: italic; }
+    .category-items { padding: 0 15px 15px; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+    .quick-item-btn { background: white; border: 1px solid #ced4da; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; font-size: 0.85em; text-align: center; color: #495057; }
+    .quick-item-btn:hover { background: #fff4ef; color: black; border-color: #e7b8a2; transform: translateY(-2px); }
+
+    /* --- Empty State --- */
+    .empty-state { text-align: center; padding: 40px; color: #6c757d; }
+    .empty-state-icon { font-size: 3em; margin-bottom: 15px; }
+
+    /* --- Dashboard --- */
+    .dashboard-kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .kpi-card { background: #fff; border-radius: 12px; padding: 15px; border: 1px solid #e0e0e0; color: #212529; }
+    .kpi-title { font-size: 0.85em; color: #6c757d; margin-bottom: 5px; display:flex; align-items:center; gap:6px; }
+    .kpi-title i { color:#7b3a2a; }
+    .kpi-value { font-size: 1.5em; font-weight: 800; color: #343a40; }
+    .kpi-change { font-size: 0.75em; margin-top: 5px; color: #6c757d; }
+    .insights-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 15px; margin-bottom: 15px; color: #212529; }
+    .insight-title { font-weight: 800; color: #343a40; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .insight-title i { color:#7b3a2a; }
+    .insight-content { color: #495057; font-size: 0.9em; line-height: 1.5; }
+    #shoppingListSummary { font-size: 0.85em; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e0e0e0; color: #495057; }
+
+
+    /* --- Chart Styles --- */
+    .chart-container { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); border: 1px solid #f1e4de; }
+    .chart-title { font-weight: 800; color: #343a40; margin-bottom: 15px; text-align: center; display:flex; justify-content:center; align-items:center; gap:8px; }
+    .bar-chart { display: flex; align-items: flex-end; justify-content: space-between; height: 150px; margin-bottom: 10px; padding: 10px 0; border-left: 1px solid #ced4da; border-bottom: 1px solid #ced4da; }
+    .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; margin: 0 2px; }
+    .bar { width: 100%; background: #495057; border-radius: 4px 4px 0 0; transition: all 0.3s ease; position: relative; }
+    .bar:hover { opacity: 0.85; }
+    .bar-value { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 0.7em; font-weight: bold; color: #495057; }
+    .bar-label { font-size: 0.7em; color: #6c757d; margin-top: 5px; }
+
+    /* --- Profit indicator & prediction badge --- */
+    .profit-indicator { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.8em; font-weight: bold; margin-left: 8px; }
+    .profit-high { background: #d4edda; color: #155724; }
+    .profit-medium { background: #fff3cd; color: #85640a; }
+    .profit-low { background: #f8d7da; color: #721c24; }
+    .prediction-badge { background: #e7f1ff; color: #0056b3; padding: 4px 8px; border-radius: 6px; font-size: 0.75em; font-weight: bold; margin-left: 8px; border: 1px solid #b8daff; display:inline-flex; align-items:center; gap:6px; }
+
+    /* --- PWA Install --- */
+    .install-prompt { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1000; max-width: 90%; text-align: center; border: 1px solid #ced4da; }
+    .install-prompt.show { display: block; animation: slideUp 0.5s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(100px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+    /* --- Sticky Cart Bar --- */
+    .cart-bar {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 8px;
+      width: calc(100% - 16px);
+      max-width: 480px;
+      background: #ffffff;
+      border: 1px solid #efdfd8;
+      border-radius: 12px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.16);
+      z-index: 1100;
+      overflow: hidden;
+    }
+    .cart-hidden { display: none; }
+    .cart-summary {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 12px;
+      background: #fff7f3;
+      border-bottom: 1px solid #efdfd8;
+      font-weight: 700;
+      color: #212529;
+    }
+    .cart-summary .summary-left { display: flex; gap: 8px; align-items: center; }
+    .cart-toggle { background: transparent; border: none; font-size: 18px; cursor: pointer; color: #495057; }
+    .cart-items { max-height: 220px; overflow: auto; padding: 8px 12px; display: none; }
+    .cart-items.show { display: block; }
+    .cart-line { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px dashed #e5e7eb; }
+    .cart-line:last-child { border-bottom: none; }
+    .cart-name { font-weight: 700; color: #111827; font-size: 0.95em; }
+    .cart-meta { color: #6b7280; font-size: 0.8em; }
+    .qty-controls { display: inline-flex; align-items: center; gap: 6px; }
+    .qty-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid #efdfd8; background: white; font-weight: 700; cursor: pointer; }
+    .qty { min-width: 22px; text-align: center; font-weight: 700; }
+    .line-total { font-weight: 800; color: #111827; font-size: 0.95em; }
+    .cart-actions { display: flex; gap: 8px; justify-content: space-between; padding: 10px 12px; background: #ffffff; }
+
+    /* --- Credit Tab --- */
+    .credit-card {
+        background: #fff; border-radius: 12px; padding: 15px;
+        margin-bottom: 15px; border: 1px solid #e0e0e0;
+    }
+    .credit-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .credit-name { font-size: 1.2em; font-weight: 800; color: #343a40; }
+    .credit-total { font-size: 1.1em; font-weight: 700; color: #ef4444; }
+    .credit-date { font-size: 0.8em; color: #6c757d; }
+    .credit-items-list { font-size: 0.9em; color: #495057; line-height: 1.5; margin-bottom: 15px; }
+    .credit-items-list span { color: #1f2937; font-weight: 500; }
+    .credit-actions { display: flex; justify-content: flex-end; }
+
+    /* --- Settings --- */
+    .settings-section {
+        background: #fff; border-radius: 12px; padding: 20px;
+        margin-bottom: 20px; border: 1px solid #e0e0e0;
+    }
+    .settings-title { font-weight:800; color:#343a40; margin-bottom:15px; font-size: 1.1em; }
+    .setting-item {
+        display:flex; justify-content:space-between; align-items:center;
+        padding:12px 0; border-bottom:1px solid #f1e4de;
+    }
+    .setting-item:last-child { border-bottom: none; }
+    .setting-label { font-weight: 600; color: #343a40; }
+    .setting-value { color: #6c757d; font-weight: 500; }
+    .setting-input { width: 80px; text-align: right; }
+
+    /* --- Modal --- */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); z-index: 2000;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    }
+    .modal-overlay.show { opacity: 1; visibility: visible; }
+    .modal-content {
+      background: white; border-radius: 12px; padding: 20px;
+      width: calc(100% - 30px); max-width: 400px;
+      transform: scale(0.9); transition: all 0.3s ease;
+    }
+    .modal-overlay.show .modal-content { transform: scale(1); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .modal-title { font-weight: 700; font-size: 1.2em; color: #212529; }
+    .modal-close { background: none; border: none; font-size: 1.5em; cursor: pointer; }
+    .modal-actions { display: flex; justify-content: space-between; margin-top: 20px; }
+    
+    /* --- History Log --- */
+    .activity-log-list { display: flex; flex-direction: column; gap: 12px; }
+    .log-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        background: #fff;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #f1e4de;
+    }
+    .log-icon {
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+    .log-icon-sale { background: #16a34a; }
+    .log-icon-add { background: #0ea5e9; }
+    .log-icon-update { background: #f59e0b; }
+    .log-icon-credit_add { background: #ef4444; }
+    .log-icon-credit_paid { background: #8b5cf6; }
+    .log-message { flex-grow: 1; font-size: 0.9em; color: #374151; }
+    .log-timestamp { font-size: 0.75em; color: #6b7280; margin-top: 4px; }
+
+
+    /* Subtle tap feedback */
+    .filter-chip, .quick-item-btn, .tab, .btn-action, .quick-sell-btn, .btn-primary, .btn-secondary, .btn-warning, .btn-danger {
+      transition: transform 80ms ease;
+      will-change: transform;
+    }
+    .tap-press { transform: scale(0.99); }
+
+    /* Utility */
+    #currentDateDisplay { display:none; }
+
+    /* Tabler icon baseline tweak */
+    .ti { line-height: 1; vertical-align: -0.1em; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="container">
+      <div class="header">
+        <div class="header-text">
+          <img src="logo.svg" alt="TindaTech" class="brand-logo">
+          <p>Smart Inventory for your store</p>
+        </div>
+        <div class="header-icon" aria-hidden="true"><i class="ti ti-building-store"></i></div>
+
+        <!-- Date badge -->
+        <div class="header-date" aria-label="Today">
+          <div class="weekday" id="headerWeekday">Wednesday,</div>
+          <div class="monthday" id="headerMonthDay">August 20</div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="totalProducts">0</div>
+          <div class="stat-label">Products</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">₱<span id="todaySales">0</span></div>
+          <div class="stat-label">Today's Sales</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">₱<span id="todayProfit">0</span></div>
+          <div class="stat-label">Today's Profit</div>
+        </div>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Main sections">
+        <button class="tab active" onclick="switchTab(event,'inventory')" role="tab" aria-selected="true">
+          <i class="ti ti-packages"></i> Inventory
+        </button>
+        <button class="tab" onclick="switchTab(event,'insights')" role="tab" aria-selected="false">
+          <i class="ti ti-chart-bar"></i> Dashboard
+        </button>
+        <button class="tab" onclick="switchTab(event,'history')" role="tab" aria-selected="false">
+          <i class="ti ti-history"></i> History
+        </button>
+        <button class="tab" onclick="switchTab(event,'credit')" role="tab" aria-selected="false">
+          <i class="ti ti-notebook"></i> Credit
+        </button>
+        <button class="tab" onclick="switchTab(event,'add')" role="tab" aria-selected="false">
+          <i class="ti ti-plus"></i> Add
+        </button>
+        <button class="tab" onclick="switchTab(event,'settings')" role="tab" aria-selected="false">
+          <i class="ti ti-settings"></i> Settings
+        </button>
+      </div>
+
+      <div class="content">
+        <div id="inventory" class="tab-content active">
+          <div id="alertsContainer" style="margin-bottom: 15px;"></div>
+
+          <div id="quickAccessSection" style="display: none;">
+            <div class="quick-access-header"><i class="ti ti-bolt"></i>Quick Access - Top Sellers</div>
+            <div id="quickAccessItems" class="quick-access-grid"></div>
+          </div>
+
+          <div class="inventory-controls">
+            <div class="search-row" style="margin-bottom:10px;">
+              <button id="startSaleBtn" class="btn-primary" onclick="startTransaction()" aria-label="Start new sale">
+                <i class="ti ti-shopping-cart"></i> New Sale
+              </button>
+              <button id="manageInventoryBtn" class="btn-secondary" onclick="toggleManageMode()" aria-label="Manage inventory">
+                <i class="ti ti-edit"></i> Manage
+              </button>
+              <button id="cancelSaleBtn" class="btn-secondary" onclick="cancelTransaction()" style="display:none;" aria-label="Cancel current sale">
+                <i class="ti ti-x"></i> Cancel
+              </button>
+            </div>
+
+            <div class="search-row">
+              <input type="text" id="productSearch" class="search-input" placeholder="Search items…" onkeyup="searchProducts()" aria-label="Search products">
+            </div>
+            <div id="categoryFilters" class="category-filters" role="group" aria-label="Filter by category">
+              <button class="filter-chip active" onclick="filterByCategory(event,'all')" aria-label="All categories" title="All"><i class="ti ti-filter"></i> All</button>
+              <button class="filter-chip" onclick="filterByCategory(event,'beverages')" aria-label="Beverages" title="Beverages"><i class="ti ti-bottle"></i></button>
+              <button class="filter-chip" onclick="filterByCategory(event,'noodles')" aria-label="Noodles" title="Noodles"><i class="ti ti-noodles"></i></button>
+              <button class="filter-chip" onclick="filterByCategory(event,'snacks')" aria-label="Snacks" title="Snacks"><i class="ti ti-cookie"></i></button>
+              <button class="filter-chip" onclick="filterByCategory(event,'canned')" aria-label="Canned Goods" title="Canned Goods"><i class="ti ti-box"></i></button>
+              <button class="filter-chip" onclick="filterByCategory(event,'coffee')" aria-label="Coffee & Tea" title="Coffee & Tea"><i class="ti ti-coffee"></i></button>
+              <button class="filter-chip" onclick="filterByCategory(event,'dairy')" aria-label="Dairy & Eggs" title="Dairy & Eggs"><i class="ti ti-milk"></i></button>
+              <button class="filter-chip" onclick="filterByCategory(event,'condiments')" aria-label="Condiments" title="Condiments"><i class="ti ti-salt"></i></button>
+              <button class="filter-chip" onclick="filterByCategory(event,'personal')" aria-label="Personal Care" title="Personal Care"><i class="ti ti-hand-soap"></i></button>
+              <button class="filter-chip" onclick="filterByCategory(event,'firstaid')" aria-label="First Aid" title="First Aid"><i class="ti ti-first-aid-kit"></i></button>
+              <button class="filter-chip" onclick="filterByCategory(event,'household')" aria-label="Household" title="Household"><i class="ti ti-broom"></i></button>
+              <button class="filter-chip" onclick="filterByCategory(event,'candy')" aria-label="Candy & Sweets" title="Candy & Sweets"><i class="ti ti-candy"></i></button>
+              <button class="filter-chip" onclick="filterByCategory(event,'cigarettes')" aria-label="Cigarettes" title="Cigarettes"><i class="ti ti-smoking"></i></button>
+            </div>
+          </div>
+
+          <div id="productList" class="product-list">
+            <div class="empty-state">
+              <div class="empty-state-icon"><i class="ti ti-package"></i></div>
+              <p>No products yet. Add your first item!</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="insights" class="tab-content" aria-live="polite">
+          <div class="dashboard-kpis">
+            <div class="kpi-card">
+              <div class="kpi-title"><i class="ti ti-currency-peso"></i> Inventory Value</div>
+              <div class="kpi-value">₱<span id="inventoryValue">0</span></div>
+              <div class="kpi-change" id="inventoryChange">capital in stock</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title"><i class="ti ti-trophy"></i> Most Profitable</div>
+              <div class="kpi-value" id="mostProfitable">--</div>
+              <div class="kpi-change" id="profitableAmount">₱0 total profit</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title"><i class="ti ti-calendar-stats"></i> Busiest Day</div>
+              <div class="kpi-value" id="busiestDay">--</div>
+              <div class="kpi-change" id="busiestSales">0 sales</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title"><i class="ti ti-alert-triangle"></i> Needs Restock</div>
+              <div class="kpi-value"><span id="itemsAtRisk">0</span></div>
+              <div class="kpi-change">below reorder point</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title"><i class="ti ti-notebook"></i> Outstanding Credit</div>
+              <div class="kpi-value">₱<span id="outstandingCredit">0</span></div>
+              <div class="kpi-change"><span id="outstandingCreditCount">0</span> accounts</div>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            <div class="chart-title"><i class="ti ti-chart-bar"></i> 7-Day Sales & Profit Trend</div>
+            <div class="bar-chart" id="salesChart"></div>
+            <div style="display: flex; justify-content: center; gap: 20px; margin-top: 10px;">
+              <span style="font-size: 0.8em;"><span style="color: #667eea;">■</span> Sales</span>
+              <span style="font-size: 0.8em;"><span style="color: #10b981;">■</span> Profit</span>
+            </div>
+          </div>
+
+          <div id="shoppingListContainer" class="insights-card">
+            <div class="insight-title"><i class="ti ti-shopping-cart"></i> Smart Shopping List</div>
+            <div class="insight-content" id="shoppingList">Your smart shopping list will appear here.</div>
+             <div id="shoppingListSummary"></div>
+          </div>
+
+          <div class="insights-card">
+            <div class="insight-title"><i class="ti ti-trending-up"></i> Top Performing Products</div>
+            <div class="insight-content" id="topSelling">No sales data yet. Start selling to see insights!</div>
+          </div>
+
+          <div class="insights-card">
+            <div class="insight-title"><i class="ti ti-cash"></i> Profit Analysis</div>
+            <div class="insight-content" id="profitAnalysis">Track your sales to see profit margins.</div>
+          </div>
+
+          <div class="insights-card">
+            <div class="insight-title"><i class="ti ti-hourglass-low"></i> Slow Moving Items</div>
+            <div class="insight-content" id="slowMoving">Items that haven't sold in 7+ days will appear here.</div>
+          </div>
+
+          <div class="insights-card">
+            <div class="insight-title"><i class="ti ti-bulb"></i> Actionable Recommendations</div>
+            <div class="insight-content" id="aiRecommendations">Smart suggestions will appear as you track more sales.</div>
+          </div>
+        </div>
+        
+        <div id="history" class="tab-content">
+            <div id="activityLogList" class="activity-log-list">
+                <!-- Activity log items will be rendered here -->
+            </div>
+        </div>
+
+        <div id="credit" class="tab-content">
+            <div id="creditList">
+                <!-- Credit accounts will be rendered here -->
+            </div>
+        </div>
+
+        <div id="add" class="tab-content">
+          <div class="add-product-form">
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select id="productCategory" class="form-input">
+                <option value="beverages">Beverages</option>
+                <option value="noodles">Noodles</option>
+                <option value="snacks">Snacks</option>
+                <option value="canned">Canned Goods</option>
+                <option value="coffee">Coffee & Tea</option>
+                <option value="dairy">Dairy & Eggs</option>
+                <option value="condiments">Condiments</option>
+                <option value="personal">Personal Care</option>
+                <option value="firstaid">First Aid</option>
+                <option value="household">Household</option>
+                <option value="candy">Candy & Sweets</option>
+                <option value="cigarettes">Cigarettes</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Product Name</label>
+              <input type="text" id="productName" class="form-input" placeholder="e.g., Coke 1.5L">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cost Price (₱)</label>
+              <input type="number" id="costPrice" class="form-input" placeholder="15" step="0.50" inputmode="decimal">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Selling Price (₱)</label>
+              <input type="number" id="sellingPrice" class="form-input" placeholder="20" step="0.50" inputmode="decimal">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Initial Stock</label>
+              <input type="number" id="initialStock" class="form-input" placeholder="10" min="0" inputmode="numeric">
+            </div>
+            <button class="btn-primary" onclick="addProduct()"><i class="ti ti-plus"></i> Add Product</button>
+          </div>
+
+          <h3 style="margin: 20px 0 15px; color: #1e293b;">Quick Add by Category</h3>
+
+          <!-- Category sections -->
+          <div class="category-section">
+            <div class="category-header" onclick="toggleCategory('beverages')">
+              <span><i class="ti ti-bottle"></i> Beverages</span>
+              <span class="category-preview">Coke, Sprite, Royal, Mineral Water...</span>
+            </div>
+            <div id="cat-beverages" class="category-items" style="display: none;">
+              <button class="quick-item-btn" onclick="quickAddCat('Coke 1.5L', 48, 60, 'beverages')">Coke 1.5L</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Coke Mismo', 6, 10, 'beverages')">Coke Mismo</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Sprite 1.5L', 48, 60, 'beverages')">Sprite 1.5L</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Royal 1.5L', 48, 60, 'beverages')">Royal 1.5L</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Mountain Dew 1.5L', 48, 60, 'beverages')">Mountain Dew 1.5L</button>
+              <button class="quick-item-btn" onclick="quickAddCat('C2 Solo', 10, 15, 'beverages')">C2 Solo</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Gatorade 500ml', 35, 45, 'beverages')">Gatorade 500ml</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Mineral Water 500ml', 10, 15, 'beverages')">Mineral Water 500ml</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Red Bull', 45, 60, 'beverages')">Red Bull</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Cobra Energy', 25, 35, 'beverages')">Cobra Energy</button>
+            </div>
+          </div>
+
+          <div class="category-section">
+            <div class="category-header" onclick="toggleCategory('noodles')">
+              <span><i class="ti ti-noodles"></i> Noodles</span>
+              <span class="category-preview">Lucky Me, Payless, Quickchow...</span>
+            </div>
+            <div id="cat-noodles" class="category-items" style="display: none;">
+              <button class="quick-item-btn" onclick="quickAddCat('Lucky Me Pancit Canton Original', 10, 15, 'noodles')">Pancit Canton Original</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Lucky Me Pancit Canton Chilimansi', 10, 15, 'noodles')">Pancit Canton Chilimansi</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Lucky Me Pancit Canton Sweet & Spicy', 10, 15, 'noodles')">Pancit Canton Sweet & Spicy</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Lucky Me Beef Noodles', 8, 12, 'noodles')">Lucky Me Beef</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Lucky Me Chicken Noodles', 8, 12, 'noodles')">Lucky Me Chicken</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Payless Pancit Canton', 8, 12, 'noodles')">Payless Pancit Canton</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Quickchow', 7, 10, 'noodles')">Quickchow</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Nissin Cup Noodles Seafood', 25, 35, 'noodles')">Cup Noodles Seafood</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Nissin Cup Noodles Beef', 25, 35, 'noodles')">Cup Noodles Beef</button>
+            </div>
+          </div>
+
+          <div class="category-section">
+            <div class="category-header" onclick="toggleCategory('snacks')">
+              <span><i class="ti ti-cookie"></i> Snacks</span>
+              <span class="category-preview">Piattos, Nova, Chippy, V-Cut...</span>
+            </div>
+            <div id="cat-snacks" class="category-items" style="display: none;">
+              <button class="quick-item-btn" onclick="quickAddCat('Piattos Cheese', 15, 20, 'snacks')">Piattos Cheese</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Piattos Sour Cream', 15, 20, 'snacks')">Piattos Sour Cream</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Nova Country Cheddar', 15, 20, 'snacks')">Nova Cheddar</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Nova BBQ', 15, 20, 'snacks')">Nova BBQ</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Chippy BBQ', 8, 12, 'snacks')">Chippy BBQ</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Chippy Chili', 8, 12, 'snacks')">Chippy Chili</button>
+              <button class="quick-item-btn" onclick="quickAddCat('V-Cut Spicy BBQ', 15, 20, 'snacks')">V-Cut Spicy BBQ</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Boy Bawang', 8, 12, 'snacks')">Boy Bawang</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Cracklings', 10, 15, 'snacks')">Cracklings</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Hansel Crackers', 7, 10, 'snacks')">Hansel Crackers</button>
+            </div>
+          </div>
+
+          <div class="category-section">
+            <div class="category-header" onclick="toggleCategory('canned')">
+              <span><i class="ti ti-box"></i> Canned Goods</span>
+              <span class="category-preview">Corned Beef, Sardines, Tuna...</span>
+            </div>
+            <div id="cat-canned" class="category-items" style="display: none;">
+              <button class="quick-item-btn" onclick="quickAddCat('Argentina Corned Beef 175g', 35, 45, 'canned')">Argentina Corned Beef</button>
+              <button class="quick-item-btn" onclick="quickAddCat('CDO Corned Beef 150g', 30, 40, 'canned')">CDO Corned Beef</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Ligo Sardines Red', 18, 25, 'canned')">Ligo Sardines Red</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Ligo Sardines Green', 18, 25, 'canned')">Ligo Sardines Green</button>
+              <button class="quick-item-btn" onclick="quickAddCat('555 Sardines', 15, 22, 'canned')">555 Sardines</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Century Tuna Flakes', 30, 40, 'canned')">Century Tuna Flakes</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Century Tuna Caldereta', 32, 42, 'canned')">Century Tuna Caldereta</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Spam Regular', 140, 175, 'canned')">Spam Regular</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Maling Luncheon Meat', 45, 60, 'canned')">Maling</button>
+            </div>
+          </div>
+
+          <div class="category-section">
+            <div class="category-header" onclick="toggleCategory('coffee')">
+              <span><i class="ti ti-coffee"></i> Coffee & Tea</span>
+              <span class="category-preview">Kopiko, Nescafe, Great Taste, Milo...</span>
+            </div>
+            <div id="cat-coffee" class="category-items" style="display: none;">
+              <button class="quick-item-btn" onclick="quickAddCat('Kopiko Black 3in1', 7, 10, 'coffee')">Kopiko Black 3in1</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Kopiko Brown 3in1', 7, 10, 'coffee')">Kopiko Brown 3in1</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Nescafe Original 3in1', 8, 12, 'coffee')">Nescafe 3in1</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Great Taste White', 8, 12, 'coffee')">Great Taste White</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Great Taste Original', 8, 12, 'coffee')">Great Taste Original</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Milo Sachet', 8, 12, 'coffee')">Milo Sachet</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Bear Brand Powdered', 10, 15, 'coffee')">Bear Brand</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Lipton Tea', 5, 8, 'coffee')">Lipton Tea</button>
+            </div>
+          </div>
+
+          <div class="category-section">
+            <div class="category-header" onclick="toggleCategory('dairy')">
+              <span><i class="ti ti-milk"></i> Dairy & Eggs</span>
+              <span class="category-preview">Fresh Milk, Eggs, Cheese, Butter...</span>
+            </div>
+            <div id="cat-dairy" class="category-items" style="display: none;">
+              <button class="quick-item-btn" onclick="quickAddCat('Fresh Eggs (per piece)', 6, 8, 'dairy')">Fresh Eggs</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Alaska Evap Milk', 30, 38, 'dairy')">Alaska Evap</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Alaska Condensed Milk', 32, 40, 'dairy')">Alaska Condensed</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Quickmelt Cheese', 80, 100, 'dairy')">Quickmelt Cheese</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Star Margarine', 15, 20, 'dairy')">Star Margarine</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Anchor Butter', 40, 50, 'dairy')">Anchor Butter</button>
+            </div>
+          </div>
+
+          <div class="category-section">
+            <div class="category-header" onclick="toggleCategory('condiments')">
+              <span><i class="ti ti-salt"></i> Condiments</span>
+              <span class="category-preview">Soy Sauce, Vinegar, Salt, Sugar...</span>
+            </div>
+            <div id="cat-condiments" class="category-items" style="display: none;">
+              <button class="quick-item-btn" onclick="quickAddCat('Datu Puti Soy Sauce 385ml', 18, 25, 'condiments')">Datu Puti Soy Sauce</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Datu Puti Vinegar 385ml', 15, 22, 'condiments')">Datu Puti Vinegar</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Silver Swan Soy Sauce', 18, 25, 'condiments')">Silver Swan Soy Sauce</button>
+              <button class="quick-item-btn" onclick="quickAddCat('UFC Ketchup 320g', 35, 45, 'condiments')">UFC Ketchup</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Mang Tomas Sarsa', 25, 35, 'condiments')">Mang Tomas</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Magic Sarap 16g', 5, 8, 'condiments')">Magic Sarap</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Knorr Cubes', 5, 8, 'condiments')">Knorr Cubes</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Iodized Salt 500g', 15, 20, 'condiments')">Iodized Salt</button>
+              <button class="quick-item-btn" onclick="quickAddCat('White Sugar (per kilo)', 55, 70, 'condiments')">White Sugar</button>
+            </div>
+          </div>
+
+          <div class="category-section">
+            <div class="category-header" onclick="toggleCategory('personal')">
+              <span><i class="ti ti-hand-soap"></i> Personal Care</span>
+              <span class="category-preview">Shampoo, Soap, Toothpaste...</span>
+            </div>
+            <div id="cat-personal" class="category-items" style="display: none;">
+              <button class="quick-item-btn" onclick="quickAddCat('Safeguard Soap', 20, 28, 'personal')">Safeguard Soap</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Palmolive Shampoo Sachet', 6, 10, 'personal')">Palmolive Shampoo</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Head & Shoulders Sachet', 7, 12, 'personal')">Head & Shoulders</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Colgate Toothpaste 25ml', 15, 22, 'personal')">Colgate Small</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Close Up Toothpaste', 15, 22, 'personal')">Close Up</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Modess Regular', 7, 12, 'personal')">Modess Regular</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Whisper with Wings', 8, 13, 'personal')">Whisper</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Bioderm Soap', 15, 22, 'personal')">Bioderm Soap</button>
+            </div>
+          </div>
+
+          <div class="category-section">
+            <div class="category-header" onclick="toggleCategory('firstaid')">
+              <span><i class="ti ti-first-aid-kit"></i> First Aid</span>
+              <span class="category-preview">Biogesic, Neozep, Band-Aid...</span>
+            </div>
+            <div id="cat-firstaid" class="category-items" style="display: none;">
+              <button class="quick-item-btn" onclick="quickAddCat('Biogesic 500mg', 5, 8, 'firstaid')">Biogesic</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Neozep Forte', 7, 10, 'firstaid')">Neozep Forte</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Bioflu', 8, 12, 'firstaid')">Bioflu</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Medicol Advance', 7, 10, 'firstaid')">Medicol Advance</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Band-Aid', 5, 8, 'firstaid')">Band-Aid</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Betadine 10ml', 30, 40, 'firstaid')">Betadine</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Efficascent Oil', 35, 45, 'firstaid')">Efficascent Oil</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Vicks Vaporub', 25, 35, 'firstaid')">Vicks Vaporub</button>
+            </div>
+          </div>
+
+          <div class="category-section">
+            <div class="category-header" onclick="toggleCategory('household')">
+              <span><i class="ti ti-broom"></i> Household</span>
+              <span class="category-preview">Detergent, Fabric Softener, Bleach...</span>
+            </div>
+            <div id="cat-household" class="category-items" style="display: none;">
+              <button class="quick-item-btn" onclick="quickAddCat('Ariel Powder 66g', 7, 10, 'household')">Ariel Powder</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Tide Powder 66g', 7, 10, 'household')">Tide Powder</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Surf Powder 66g', 6, 9, 'household')">Surf Powder</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Downy Sachet', 6, 10, 'household')">Downy Sachet</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Zonrox Bleach 250ml', 15, 22, 'household')">Zonrox Bleach</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Joy Dishwashing 25ml', 7, 10, 'household')">Joy Dishwashing</button>
+            </div>
+          </div>
+
+          <div class="category-section">
+            <div class="category-header" onclick="toggleCategory('candy')">
+              <span><i class="ti ti-candy"></i> Candy & Sweets</span>
+              <span class="category-preview">Mentos, Maxx, Halls, Chocolates...</span>
+            </div>
+            <div id="cat-candy" class="category-items" style="display: none;">
+              <button class="quick-item-btn" onclick="quickAddCat('Mentos', 6, 10, 'candy')">Mentos</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Maxx Candy', 1, 2, 'candy')">Maxx Candy</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Halls', 6, 10, 'candy')">Halls</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Kopiko Candy', 1, 2, 'candy')">Kopiko Candy</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Choc-Nut', 2, 3, 'candy')">Choc-Nut</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Stick-O', 8, 12, 'candy')">Stick-O</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Cloud 9', 7, 10, 'candy')">Cloud 9</button>
+            </div>
+          </div>
+
+          <div class="category-section">
+            <div class="category-header" onclick="toggleCategory('cigarettes')">
+              <span><i class="ti ti-smoking"></i> Cigarettes</span>
+              <span class="category-preview">Marlboro, Fortune, Hope...</span>
+            </div>
+            <div id="cat-cigarettes" class="category-items" style="display: none;">
+              <button class="quick-item-btn" onclick="quickAddCat('Marlboro Red (per stick)', 6, 8, 'cigarettes')">Marlboro Red/stick</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Marlboro Red (pack)', 115, 140, 'cigarettes')">Marlboro Red/pack</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Fortune (per stick)', 5, 7, 'cigarettes')">Fortune/stick</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Fortune (pack)', 95, 115, 'cigarettes')">Fortune/pack</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Hope (per stick)', 4, 6, 'cigarettes')">Hope/stick</button>
+              <button class="quick-item-btn" onclick="quickAddCat('Mighty Red (per stick)', 4, 6, 'cigarettes')">Mighty/stick</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="settings" class="tab-content">
+          <div class="settings-section">
+            <div class="settings-title">Store Information</div>
+            <div class="setting-item">
+              <span class="setting-label">Store Name</span>
+              <span class="setting-value">My Sari-Sari Store</span>
+            </div>
+            <div class="setting-item">
+              <span class="setting-label">Total Products</span>
+              <span class="setting-value" id="settingsTotalProducts">0</span>
+            </div>
+            <div class="setting-item">
+              <span class="setting-label">Data Stored Since</span>
+              <span class="setting-value" id="dataStartDate">Today</span>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-title">Prediction & Shopping List Settings</div>
+             <div class="setting-item">
+              <label for="shoppingBudget" class="setting-label">Shopping Budget (₱)</label>
+              <input type="number" id="shoppingBudget" class="form-input setting-input">
+            </div>
+            <div class="setting-item">
+              <label for="storageCapacity" class="setting-label">Storage Capacity (units)</label>
+              <input type="number" id="storageCapacity" class="form-input setting-input">
+            </div>
+             <div class="setting-item">
+              <label for="reviewPeriodDays" class="setting-label">How often do you restock? (days)</label>
+              <input type="number" id="reviewPeriodDays" class="form-input setting-input">
+            </div>
+             <div class="setting-item">
+              <label for="safetyStockDays" class="setting-label">Safety stock buffer (days)</label>
+              <input type="number" id="safetyStockDays" class="form-input setting-input">
+            </div>
+             <div class="setting-item">
+              <label for="leadTimeDays" class="setting-label">Supplier lead time (days)</label>
+              <input type="number" id="leadTimeDays" class="form-input setting-input">
+            </div>
+            <div style="text-align:right; margin-top:15px;">
+                <button class="btn-primary" onclick="savePredictionSettings()"><i class="ti ti-device-floppy"></i> Save Settings</button>
+            </div>
+          </div>
+
+          <div class="settings-section" style="display:flex; flex-direction:column; gap:10px;">
+            <button class="btn-primary" onclick="exportData()"><i class="ti ti-download"></i> Export Data</button>
+            <button class="btn-danger" onclick="clearAllData()"><i class="ti ti-trash"></i> Clear All Data</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Product Modal -->
+  <div id="editProductModal" class="modal-overlay" onclick="closeEditModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Product</h3>
+        <button class="modal-close" onclick="closeEditModal()">&times;</button>
+      </div>
+      <div id="editProductForm">
+        <input type="hidden" id="editProductId">
+        <div class="form-group">
+          <label class="form-label">Product Name</label>
+          <input type="text" id="editProductName" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cost Price (₱)</label>
+          <input type="number" id="editCostPrice" class="form-input" step="0.50" inputmode="decimal">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Selling Price (₱)</label>
+          <input type="number" id="editSellingPrice" class="form-input" step="0.50" inputmode="decimal">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Current Stock</label>
+          <input type="number" id="editStock" class="form-input" min="0" inputmode="numeric">
+        </div>
+         <div class="form-group">
+          <label class="form-label">Max Stock (Optional)</label>
+          <input type="number" id="editMaxStock" class="form-input" min="0" inputmode="numeric" placeholder="e.g., 50">
+        </div>
+        <div class="modal-actions">
+          <button class="btn-danger" onclick="deleteProduct()"><i class="ti ti-trash"></i> Delete</button>
+          <button class="btn-primary" onclick="saveProductChanges()"><i class="ti ti-device-floppy"></i> Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Sticky Cart Bar -->
+  <div id="cartBar" class="cart-bar cart-hidden" role="region" aria-label="Current sale">
+    <div class="cart-summary">
+      <div class="summary-left">
+        <i class="ti ti-shopping-cart"></i>
+        <span id="cartItemsCount">0</span> items • <span id="cartTotal">₱0.00</span>
+      </div>
+      <button class="cart-toggle" onclick="toggleCartExpand()" aria-label="Expand or collapse cart" title="Expand/Collapse">▾</button>
+    </div>
+    <div id="cartItemsList" class="cart-items"></div>
+    <div class="cart-actions">
+      <button class="btn-warning" onclick="finalizeTransaction(true)" aria-label="Pay later">
+          <i class="ti ti-notebook"></i> Utang
+      </button>
+      <button class="btn-primary" onclick="finalizeTransaction(false)" aria-label="Checkout and pay">
+          <i class="ti ti-credit-card"></i> Pay Now
+      </button>
+    </div>
+  </div>
+
+  <!-- Install prompt -->
+  <div id="installPrompt" class="install-prompt">
+    <p><strong>Install TindaTech</strong></p>
+    <p style="margin: 10px 0; font-size: 0.9em;">Add to your home screen for offline access!</p>
+    <button class="btn-primary" onclick="installPWA()"><i class="ti ti-device-mobile-plus"></i> Install App</button>
+  </div>
+
+  <script>
+    // Data stores
+    let inventory = JSON.parse(localStorage.getItem('tindatech_inventory')) || [];
+    let salesHistory = JSON.parse(localStorage.getItem('tindatech_sales')) || [];
+    let transactions = JSON.parse(localStorage.getItem('tindatech_transactions')) || [];
+    let creditAccounts = JSON.parse(localStorage.getItem('tindatech_credit')) || [];
+    let activityLog = JSON.parse(localStorage.getItem('tindatech_activityLog')) || [];
+    let settings = JSON.parse(localStorage.getItem('tindatech_settings')) || {
+        reviewPeriodDays: 7,
+        safetyStockDays: 3,
+        leadTimeDays: 1,
+        shoppingBudget: 5000,
+        storageCapacity: 500
+    };
+    let alerts = [];
+    let deferredPrompt;
+
+    // App state
+    let currentTransaction = null;
+    let cartExpanded = false;
+    let manageModeActive = false;
+
+    const CATEGORY_SIZES = {
+        beverages: 5, noodles: 2, snacks: 2, canned: 3, coffee: 1, dairy: 3,
+        condiments: 2, personal: 2, firstaid: 1, household: 4, candy: 1, cigarettes: 1, other: 3
+    };
+
+    // Currency formatter
+    const formatPHP = new Intl.NumberFormat(navigator.language || 'en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 2 });
+
+    function setHeaderDate(){
+      const now = new Date();
+      const weekday = now.toLocaleDateString(navigator.language || 'en-US', { weekday: 'long' });
+      const month = now.toLocaleDateString(navigator.language || 'en-US', { month: 'long' });
+      const day = now.getDate();
+      const wdEl = document.getElementById('headerWeekday');
+      const mdEl = document.getElementById('headerMonthDay');
+      if (wdEl) wdEl.textContent = `${weekday},`;
+      if (mdEl) mdEl.textContent = `${month} ${day}`;
+    }
+
+    function initializeApp() {
+      setHeaderDate();
+      loadPredictionSettings();
+      currentCategoryFilter = 'all';
+      currentSearchTerm = '';
+      loadInventory();
+      updateStats();
+      generateIntelligentAlerts();
+      generateInsights();
+      updateDashboard();
+      checkDataStartDate();
+      loadCreditTab();
+
+      // Enable tap feedback baseline
+      enableTapFeedback('.filter-chip, .quick-item-btn, .tab, .btn-action, .quick-sell-btn, .btn-primary, .btn-secondary, .btn-warning, .btn-danger');
+    }
+    document.addEventListener('DOMContentLoaded', initializeApp);
+
+    // Tap feedback helper (idempotent)
+    function enableTapFeedback(selector) {
+      const els = document.querySelectorAll(selector);
+      els.forEach(el => {
+        if (el.dataset.tapbound === '1') return;
+        el.dataset.tapbound = '1';
+        el.addEventListener('touchstart', () => el.classList.add('tap-press'), { passive: true });
+        el.addEventListener('touchend', () => el.classList.remove('tap-press'));
+        el.addEventListener('touchcancel', () => el.classList.remove('tap-press'));
+        el.addEventListener('mousedown', () => el.classList.add('tap-press'));
+        ['mouseup','mouseleave','blur'].forEach(evt =>
+          el.addEventListener(evt, () => el.classList.remove('tap-press'))
+        );
+      });
+    }
+
+    // Tabs
+    function switchTab(e, tabName) {
+        document.querySelectorAll('.tab').forEach(tab => { tab.classList.remove('active'); tab.setAttribute('aria-selected','false'); });
+        const targetTab = e.target.closest('.tab');
+        targetTab.classList.add('active');
+        targetTab.setAttribute('aria-selected','true');
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById(tabName).classList.add('active');
+        
+        if (tabName === 'insights') { updateDashboard(); generateInsights(); drawSalesChart(); }
+        else if (tabName === 'settings') { updateSettings(); }
+        else if (tabName === 'credit') { loadCreditTab(); }
+        else if (tabName === 'history') { loadHistoryTab(); }
+    }
+    
+    // --- ROBUST FORECASTING LOGIC ---
+    function getSalesByDay(productId, days = 30) {
+        const now = new Date();
+        const dailySales = new Map();
+        for (let i = 0; i < days; i++) {
+            const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+            dailySales.set(date.toDateString(), 0);
+        }
+        salesHistory.forEach(s => {
+            if (s.productId === productId) {
+                const saleDate = new Date(s.timestamp).toDateString();
+                if (dailySales.has(saleDate)) {
+                    dailySales.set(saleDate, (dailySales.get(saleDate) || 0) + 1);
+                }
+            }
+        });
+        return Array.from(dailySales.values());
+    }
+
+    function calculateRobustRate(product) {
+        const salesData = getSalesByDay(product.id, 30);
+        if (salesData.length === 0 || product.totalSold === 0) return 0;
+
+        const mean = salesData.reduce((a, b) => a + b, 0) / salesData.length;
+        const stdDev = Math.sqrt(salesData.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / salesData.length);
+        
+        // Dampen outliers: cap any single day's sales at mean + 2*stdDev for forecasting
+        const dampenedSales = salesData.map(val => Math.min(val, mean + 2 * stdDev));
+        
+        // Simple weighted moving average (70% last 7 days, 30% last 30 days)
+        const last7 = dampenedSales.slice(0, 7);
+        const last30 = dampenedSales;
+        const wma7 = last7.reduce((a, b) => a + b, 0) / Math.max(last7.length, 1);
+        const wma30 = last30.reduce((a, b) => a + b, 0) / Math.max(last30.length, 1);
+        
+        let rate = (wma7 * 0.7) + (wma30 * 0.3);
+
+        // Fallback for brand new items with less than 3 days of data
+        const daysActive = product.dateAdded ? Math.max(1, Math.floor((new Date() - new Date(product.dateAdded)) / (1000*60*60*24))) : 1;
+        if (daysActive < 3) {
+            const lifetimeRate = product.totalSold / daysActive;
+            rate = (rate + lifetimeRate) / 2; // Blend with lifetime average
+        }
+        
+        // Final sanity check: if rate is 0 but there have been sales, use a small floor value
+        if (rate === 0 && product.totalSold > 0) {
+            return 0.1;
+        }
+
+        return rate;
+    }
+
+    function getProductPrediction(product) {
+        const rate = calculateRobustRate(product);
+        const safetyStock = rate * settings.safetyStockDays;
+        const reorderPoint = (rate * settings.leadTimeDays) + safetyStock;
+        const daysUntilStockout = rate > 0 ? Math.floor(product.stock / rate) : Infinity;
+
+        const needsRestock = rate > 0 && (product.stock <= reorderPoint || (isFinite(daysUntilStockout) && daysUntilStockout <= settings.safetyStockDays));
+
+        let orderQty = 0;
+        if (needsRestock) {
+            const targetStock = Math.ceil((rate * settings.reviewPeriodDays) + safetyStock);
+            orderQty = Math.max(0, targetStock - product.stock);
+        }
+        
+        // Apply Max Stock constraint
+        if (product.maxStock && product.maxStock > 0) {
+            const potentialStock = product.stock + orderQty;
+            if (potentialStock > product.maxStock) {
+                orderQty = Math.max(0, product.maxStock - product.stock);
+            }
+        }
+
+        return {
+            dailyRate: rate,
+            safetyStock,
+            reorderPoint,
+            daysUntilStockout,
+            recommendedOrderQty: Math.ceil(orderQty),
+            priorityScore: rate * (product.sellingPrice - product.costPrice) // Potential daily profit
+        };
+    }
+
+    // --- REVISED ALERTS LOGIC ---
+    function generateIntelligentAlerts() {
+      alerts = [];
+      inventory.forEach(product => {
+        const prediction = getProductPrediction(product);
+
+        if (product.stock === 0) {
+          alerts.push({ type: 'danger', title: 'Out of Stock', message: `${product.name} is out of stock. It has been prioritized on your Smart Shopping List.` });
+        } else if (product.stock <= prediction.reorderPoint && prediction.dailyRate > 0) {
+          const daysSupplyText = isFinite(prediction.daysUntilStockout) ? `~${prediction.daysUntilStockout} days supply left` : 'supply is low';
+          alerts.push({ type: 'warning', title: 'Low Stock', message: `${product.name} is running low with ${product.stock} left (${daysSupplyText}). Check the Smart Shopping List for recommendations.` });
+        } else if (prediction.dailyRate > 5 && isFinite(prediction.daysUntilStockout) && prediction.daysUntilStockout < 7) {
+          alerts.push({ type: 'info', title: 'Fast Mover', message: `${product.name} is selling fast (~${prediction.dailyRate.toFixed(1)}/day). Keep an eye on its stock.` });
+        }
+      });
+      const alertsContainer = document.getElementById('alertsContainer');
+      alertsContainer.innerHTML = alerts.slice(0,3).map(a => `
+        <div class="alert-box">
+          <div class="alert-title">${a.title}</div>
+          <div class="alert-message">${a.message}</div>
+        </div>
+      `).join('');
+    }
+
+
+    // --- REVISED QUICK ACCESS LOGIC ---
+    function generateQuickAccess() {
+      const quickAccessSection = document.getElementById('quickAccessSection');
+      const quickAccessItems = document.getElementById('quickAccessItems');
+      
+      const topSellers = [...inventory]
+        .filter(p => p.stock > 0 && p.totalSold > 0)
+        .sort((a,b) => getProductPrediction(b).dailyRate - getProductPrediction(a).dailyRate)
+        .slice(0,8);
+
+      if (topSellers.length > 0) {
+        quickAccessSection.style.display = 'block';
+        quickAccessItems.innerHTML = topSellers.map(product => {
+          const icon = getCategoryIcon(product.category);
+          return `
+            <div class="quick-access-item">
+              <div class="quick-access-name">${icon} ${product.name}</div>
+              <div class="quick-access-details">Sold: ${product.totalSold} | Stock: ${product.stock}</div>
+              <button class="btn-action btn-sell quick-sell-btn" onclick="sellProduct(${product.id})" title="Sell 1 unit of ${product.name}">
+                <i class="ti ti-shopping-cart-plus"></i> Sell 1
+              </button>
+            </div>
+          `;
+        }).join('');
+        enableTapFeedback('.quick-sell-btn');
+      } else {
+        quickAccessSection.style.display = 'none';
+      }
+    }
+
+
+    // Icons for categories via Tabler webfont
+    function getCategoryIcon(category) {
+      const icons = {
+        beverages: '<i class="ti ti-bottle"></i>',
+        noodles: '<i class="ti ti-noodles"></i>',
+        snacks: '<i class="ti ti-cookie"></i>',
+        canned: '<i class="ti ti-box"></i>',
+        coffee: '<i class="ti ti-coffee"></i>',
+        dairy: '<i class="ti ti-milk"></i>',
+        condiments: '<i class="ti ti-salt"></i>',
+        personal: '<i class="ti ti-hand-soap"></i>',
+        firstaid: '<i class="ti ti-first-aid-kit"></i>',
+        household: '<i class="ti ti-broom"></i>',
+        candy: '<i class="ti ti-candy"></i>',
+        cigarettes: '<i class="ti ti-smoking"></i>',
+        other: '<i class="ti ti-package"></i>'
+      };
+      return icons[category] || icons.other;
+    }
+
+    // Filters and search
+    let currentCategoryFilter = 'all';
+    let currentSearchTerm = '';
+
+    function filterByCategory(e, category) {
+      currentCategoryFilter = category;
+      document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+      e.target.closest('.filter-chip').classList.add('active');
+      loadInventory();
+    }
+    
+    function searchProducts() {
+      currentSearchTerm = document.getElementById('productSearch').value;
+      if (!currentSearchTerm) {
+        currentCategoryFilter = 'all';
+        document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+        document.querySelector('.filter-chip').classList.add('active');
+      }
+      loadInventory();
+    }
+
+    // Inventory list
+    function loadInventory() {
+      const productList = document.getElementById('productList');
+      generateQuickAccess();
+
+      if (inventory.length === 0) {
+        productList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon"><i class="ti ti-package"></i></div>
+            <p>No products yet. Add your first item!</p>
+          </div>
+        `;
+        return;
+      }
+
+      let filtered = [...inventory];
+      if (currentCategoryFilter !== 'all') filtered = filtered.filter(p => p.category === currentCategoryFilter);
+      if (currentSearchTerm) filtered = filtered.filter(p => p.name.toLowerCase().includes(currentSearchTerm.toLowerCase()));
+      if (filtered.length === 0) {
+        productList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon"><i class="ti ti-search"></i></div>
+            <p>No products found. Try a different search or category.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const grouped = {};
+      filtered.forEach(p => { const c = p.category || 'other'; if (!grouped[c]) grouped[c] = []; grouped[c].push(p); });
+      Object.keys(grouped).forEach(c => {
+        grouped[c].sort((a,b) => {
+          const daysA = getProductPrediction(a).daysUntilStockout;
+          const daysB = getProductPrediction(b).daysUntilStockout;
+          return daysA - daysB;
+        });
+      });
+
+      const order = ['beverages','noodles','snacks','canned','coffee','dairy','condiments','personal','firstaid','household','candy','cigarettes','other'];
+      let html = '';
+      order.forEach(category => {
+        if (grouped[category] && grouped[category].length > 0) {
+          const icon = getCategoryIcon(category);
+          const name = category.charAt(0).toUpperCase() + category.slice(1);
+          html += `
+            <div class="category-divider">${icon} ${name}
+              <span class="category-count">${grouped[category].length} items</span>
+            </div>
+          `;
+          grouped[category].forEach(product => {
+            const marginPct = product.costPrice > 0 ? ((product.sellingPrice - product.costPrice) / product.costPrice * 100) : 0;
+            const profitMargin = marginPct.toFixed(1);
+            let profitClass = 'profit-high';
+            if (marginPct < 20) profitClass = 'profit-low';
+            else if (marginPct < 40) profitClass = 'profit-medium';
+            
+            const prediction = getProductPrediction(product);
+            const stockWarningIcon = product.stock <= prediction.reorderPoint && prediction.dailyRate > 0 ? '<i class="ti ti-alert-triangle" style="color: #f59e0b;"></i>' : '';
+            const daysLeft = isFinite(prediction.daysUntilStockout) ? `${prediction.daysUntilStockout} days supply` : 'Low sales';
+            const predictionText = (prediction.dailyRate > 0.01) ? `📊 ~${prediction.dailyRate.toFixed(1)}/day • ${daysLeft}` : 'Low sales data';
+            
+            let actionButton;
+            if (manageModeActive) {
+                actionButton = `<button class="btn-action btn-edit" onclick="openEditModal(${product.id})" aria-label="Edit ${product.name}">
+                    <i class="ti ti-pencil"></i> EDIT
+                </button>`;
+            } else {
+                const actionLabel = isTransactionActive() ? 'ADD' : 'SELL';
+                actionButton = `<button class="btn-action btn-sell" onclick="onProductAction(${product.id})" aria-label="${actionLabel} ${product.name}">
+                    <i class="ti ti-shopping-cart-plus"></i> ${actionLabel}
+                </button>`;
+            }
+
+            html += `
+              <div class="product-item">
+                <div class="product-info">
+                  <div class="product-name">
+                    ${stockWarningIcon} ${product.name}
+                    <span class="profit-indicator ${profitClass}">${profitMargin}%</span>
+                    ${isFinite(prediction.daysUntilStockout) && prediction.daysUntilStockout <= settings.safetyStockDays ? `<span class="prediction-badge"><i class="ti ti-bolt"></i> ${prediction.daysUntilStockout}d left</span>` : ''}
+                  </div>
+                  <div class="product-details">
+                    Buy: ${formatPHP.format(product.costPrice)} | Sell: ${formatPHP.format(product.sellingPrice)} | Sold: ${product.totalSold}
+                  </div>
+                  ${predictionText ? `<div class="product-prediction">${predictionText}</div>` : ''}
+                </div>
+                <div class="product-actions">
+                  <span class="stock-count" title="On hand">${product.stock}</span>
+                  ${actionButton}
+                </div>
+              </div>
+            `;
+          });
+        }
+      });
+      productList.innerHTML = html;
+
+      // Bind tap feedback to newly inserted buttons
+      enableTapFeedback('.btn-action');
+    }
+
+    // Product Actions (Sell, Edit, etc)
+    function onProductAction(productId) {
+      if (manageModeActive) {
+        openEditModal(productId);
+      } else if (isTransactionActive()) {
+        addToCart(productId);
+      } else {
+        sellProduct(productId);
+      }
+    }
+    function sellProduct(productId) {
+      const product = inventory.find(p => p.id === productId);
+      if (product && product.stock > 0) {
+        product.stock--; product.totalSold++; product.lastSold = new Date().toISOString();
+        const sale = {
+          productId, productName: product.name,
+          sellingPrice: product.sellingPrice, costPrice: product.costPrice,
+          profit: product.sellingPrice - product.costPrice,
+          timestamp: new Date().toISOString()
+        };
+        salesHistory.push(sale);
+        logActivity('sale', `Sold 1 ${product.name} for ${formatPHP.format(product.sellingPrice)}.`, { name: product.name, amount: product.sellingPrice });
+        saveData();
+        loadInventory();
+        updateStats();
+        generateIntelligentAlerts();
+        showFeedback(`Sold 1 ${product.name} for ${formatPHP.format(product.sellingPrice)}`);
+      } else {
+        showFeedback(`No stock for ${product ? product.name : 'item'}`);
+      }
+    }
+    
+    // Manage Inventory Mode
+    function toggleManageMode() {
+        manageModeActive = !manageModeActive;
+        const manageBtn = document.getElementById('manageInventoryBtn');
+        const saleBtn = document.getElementById('startSaleBtn');
+        
+        if (manageModeActive) {
+            manageBtn.innerHTML = '<i class="ti ti-check"></i> Done';
+            manageBtn.classList.add('btn-primary');
+            manageBtn.classList.remove('btn-secondary');
+            saleBtn.style.display = 'none';
+        } else {
+            manageBtn.innerHTML = '<i class="ti ti-edit"></i> Manage';
+            manageBtn.classList.remove('btn-primary');
+            manageBtn.classList.add('btn-secondary');
+            saleBtn.style.display = 'inline-flex';
+        }
+        loadInventory(); // Redraw the product list with the correct buttons
+    }
+
+    // Edit Product Modal
+    function openEditModal(productId) {
+        const product = inventory.find(p => p.id === productId);
+        if (!product) return;
+        document.getElementById('editProductId').value = product.id;
+        document.getElementById('editProductName').value = product.name;
+        document.getElementById('editCostPrice').value = product.costPrice;
+        document.getElementById('editSellingPrice').value = product.sellingPrice;
+        document.getElementById('editStock').value = product.stock;
+        document.getElementById('editMaxStock').value = product.maxStock || '';
+        document.getElementById('editProductModal').classList.add('show');
+    }
+
+    function closeEditModal() {
+        document.getElementById('editProductModal').classList.remove('show');
+    }
+
+    function saveProductChanges() {
+        const id = parseInt(document.getElementById('editProductId').value);
+        const product = inventory.find(p => p.id === id);
+        if (!product) return;
+
+        const oldStock = product.stock;
+        const newStock = parseInt(document.getElementById('editStock').value);
+
+        product.name = document.getElementById('editProductName').value.trim();
+        product.costPrice = parseFloat(document.getElementById('editCostPrice').value);
+        product.sellingPrice = parseFloat(document.getElementById('editSellingPrice').value);
+        product.stock = newStock;
+        const maxStock = parseInt(document.getElementById('editMaxStock').value);
+        product.maxStock = isNaN(maxStock) || maxStock <= 0 ? null : maxStock;
+
+        if (!product.name || isNaN(product.costPrice) || isNaN(product.sellingPrice) || isNaN(product.stock)) {
+            alert('Please fill all fields with valid values.');
+            return;
+        }
+
+        if (oldStock !== newStock) {
+            logActivity('update', `Updated stock for '${product.name}' from ${oldStock} to ${newStock}.`, { name: product.name, oldStock, newStock });
+        }
+
+        saveData();
+        loadInventory();
+        updateStats();
+        closeEditModal();
+        showFeedback(`${product.name} updated.`);
+    }
+
+    function deleteProduct() {
+        const id = parseInt(document.getElementById('editProductId').value);
+        const product = inventory.find(p => p.id === id);
+        if (!product) return;
+
+        if (confirm(`Are you sure you want to delete ${product.name}? This action cannot be undone.`)) {
+            inventory = inventory.filter(p => p.id !== id);
+            logActivity('delete', `Deleted product '${product.name}'.`);
+            saveData();
+            loadInventory();
+            updateStats();
+            closeEditModal();
+            showFeedback(`${product.name} deleted.`);
+        }
+    }
+
+    // POS state and functions
+    function isTransactionActive() { return currentTransaction !== null; }
+
+    // POS: Start/Cancel/Cart UI
+    function startTransaction() {
+      if (currentTransaction || manageModeActive) return;
+      currentTransaction = { id: Date.now(), createdAt: new Date().toISOString(), items: [] };
+      document.getElementById('cartBar').classList.remove('cart-hidden');
+      document.body.classList.add('cart-active');
+      document.getElementById('startSaleBtn').style.display = 'none';
+      document.getElementById('manageInventoryBtn').style.display = 'none';
+      document.getElementById('cancelSaleBtn').style.display = 'inline-flex';
+      cartExpanded = true;
+      renderCart();
+      loadInventory();
+      showFeedback('New sale started. Tap items to add.');
+    }
+    function cancelTransaction() {
+      if (!currentTransaction) return;
+      if (currentTransaction.items.length > 0 && !confirm('Cancel current sale?')) return;
+      
+      currentTransaction = null;
+      document.getElementById('cartBar').classList.add('cart-hidden');
+      document.body.classList.remove('cart-active');
+      document.getElementById('startSaleBtn').style.display = 'inline-flex';
+      document.getElementById('manageInventoryBtn').style.display = 'inline-flex';
+      document.getElementById('cancelSaleBtn').style.display = 'none';
+      loadInventory();
+    }
+    function toggleCartExpand() {
+      cartExpanded = !cartExpanded;
+      document.getElementById('cartItemsList').classList.toggle('show', cartExpanded);
+    }
+
+    function getCartLine(productId) { if (!currentTransaction) return null; return currentTransaction.items.find(l => l.productId === productId) || null; }
+    function addToCart(productId) {
+      const product = inventory.find(p => p.id === productId);
+      if (!product) return;
+      if (!currentTransaction) startTransaction();
+      const line = getCartLine(productId);
+      const inCartQty = line ? line.qty : 0;
+      if (product.stock <= inCartQty) { showFeedback(`Not enough stock for ${product.name}`); return; }
+      if (line) line.qty += 1;
+      else currentTransaction.items.push({ productId: product.id, name: product.name, price: product.sellingPrice, costPrice: product.costPrice, qty: 1 });
+      renderCart();
+    }
+    function changeCartQty(productId, delta) {
+      if (!currentTransaction) return;
+      const product = inventory.find(p => p.id === productId);
+      const line = getCartLine(productId);
+      if (!line || !product) return;
+      if (delta > 0) {
+        if (line.qty + delta > product.stock) { showFeedback(`Max stock reached for ${product.name}`); return; }
+        line.qty += delta;
+      } else {
+        line.qty += delta;
+        if (line.qty <= 0) currentTransaction.items = currentTransaction.items.filter(l => l.productId !== productId);
+      }
+      renderCart();
+    }
+    function renderCart() {
+      const list = document.getElementById('cartItemsList');
+      const countEl = document.getElementById('cartItemsCount');
+      const totalEl = document.getElementById('cartTotal');
+
+      if (!currentTransaction || currentTransaction.items.length === 0) {
+        list.innerHTML = `<div class="cart-line"><div class="cart-name">No items yet. Tap products to add.</div></div>`;
+        countEl.textContent = '0';
+        totalEl.textContent = formatPHP.format(0);
+        if (cartExpanded) document.getElementById('cartItemsList').classList.add('show');
+        return;
+      }
+
+      list.innerHTML = currentTransaction.items.map(l => {
+        const lineTotal = l.qty * l.price;
+        return `
+          <div class="cart-line">
+            <div>
+              <div class="cart-name">${l.name}</div>
+              <div class="cart-meta">${formatPHP.format(l.price)} •
+                <span class="qty-controls">
+                  <button class="qty-btn" onclick="changeCartQty(${l.productId}, -1)" aria-label="Decrease ${l.name}">−</button>
+                  <span class="qty">${l.qty}</span>
+                  <button class="qty-btn" onclick="changeCartQty(${l.productId}, 1)" aria-label="Increase ${l.name}">+</button>
+                </span>
+              </div>
+            </div>
+            <div class="line-total">${formatPHP.format(lineTotal)}</div>
+          </div>
+        `;
+      }).join('');
+
+      const totalItems = currentTransaction.items.reduce((s,l) => s + l.qty, 0);
+      const totalAmount = currentTransaction.items.reduce((s,l) => s + l.qty * l.price, 0);
+      countEl.textContent = String(totalItems);
+      totalEl.textContent = formatPHP.format(totalAmount);
+    }
+    function finalizeTransaction(isCredit = false) {
+      if (!currentTransaction || currentTransaction.items.length === 0) { alert('No items in sale.'); return; }
+      
+      let customerName = null;
+      if (isCredit) {
+          customerName = prompt("Enter customer's name for this credit transaction:");
+          if (!customerName || customerName.trim() === '') {
+              alert("Customer name is required for a credit transaction.");
+              return;
+          }
+          customerName = customerName.trim();
+      }
+
+      for (const l of currentTransaction.items) {
+        const p = inventory.find(x => x.id === l.productId);
+        if (!p || p.stock < l.qty) { alert(`Insufficient stock for ${l.name}.`); return; }
+      }
+      const nowIso = new Date().toISOString();
+      const totalAmount = currentTransaction.items.reduce((s,l) => s + l.qty * l.price, 0);
+      const totalCost = currentTransaction.items.reduce((s,l) => s + l.qty * l.costPrice, 0);
+      const totalProfit = totalAmount - totalCost;
+      const totalItems = currentTransaction.items.reduce((s,l) => s + l.qty, 0);
+
+      // Deduct stock for all transaction types
+      for (const l of currentTransaction.items) {
+        const p = inventory.find(x => x.id === l.productId);
+        p.stock -= l.qty; p.totalSold += l.qty; p.lastSold = nowIso;
+      }
+
+      if (isCredit) {
+        creditAccounts.push({
+            id: currentTransaction.id,
+            customerName: customerName,
+            items: currentTransaction.items,
+            totalAmount,
+            totalProfit,
+            timestamp: nowIso,
+            status: 'unpaid'
+        });
+        logActivity('credit_add', `Created credit for '${customerName}' worth ${formatPHP.format(totalAmount)}.`, { customerName, totalAmount });
+        showFeedback(`Credit for ${customerName} recorded: ${formatPHP.format(totalAmount)}`);
+      } else {
+        // Record paid transaction
+        transactions.push({
+            id: currentTransaction.id, timestamp: nowIso,
+            items: currentTransaction.items.map(l => ({ productId: l.productId, name: l.name, qty: l.qty, price: l.price })),
+            totalRevenue: totalAmount, totalProfit
+        });
+        // Record individual sales for analytics
+        for (const l of currentTransaction.items) {
+            for (let i = 0; i < l.qty; i++) {
+                salesHistory.push({
+                    transactionId: currentTransaction.id, productId: l.productId, productName: l.name,
+                    sellingPrice: l.price, costPrice: l.costPrice, profit: l.price - l.costPrice,
+                    timestamp: nowIso
+                });
+            }
+        }
+        logActivity('sale', `Completed cash sale of ${totalItems} items for ${formatPHP.format(totalAmount)}.`, { totalItems, totalAmount });
+        showFeedback(`Sale completed: ${formatPHP.format(totalAmount)}`);
+      }
+
+      saveData();
+      
+      currentTransaction = null;
+      document.getElementById('cartBar').classList.add('cart-hidden');
+      document.body.classList.remove('cart-active');
+      document.getElementById('startSaleBtn').style.display = 'inline-flex';
+      document.getElementById('manageInventoryBtn').style.display = 'inline-flex';
+      document.getElementById('cancelSaleBtn').style.display = 'none';
+
+      loadInventory(); updateStats(); generateIntelligentAlerts(); generateInsights(); drawSalesChart(); loadCreditTab();
+    }
+    
+    // Credit Tab functions
+    function loadCreditTab() {
+        const creditListContainer = document.getElementById('creditList');
+        const unpaidAccounts = creditAccounts.filter(acc => acc.status === 'unpaid').sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        if (unpaidAccounts.length === 0) {
+            creditListContainer.innerHTML = `<div class="empty-state">
+                <div class="empty-state-icon"><i class="ti ti-notebook"></i></div>
+                <p>No outstanding credit accounts. Great!</p>
+            </div>`;
+            return;
+        }
+
+        creditListContainer.innerHTML = unpaidAccounts.map(acc => {
+            const date = new Date(acc.timestamp);
+            return `
+            <div class="credit-card">
+                <div class="credit-header">
+                    <div class="credit-name">${acc.customerName}</div>
+                    <div class="credit-total">${formatPHP.format(acc.totalAmount)}</div>
+                </div>
+                <div class="credit-date">${date.toLocaleDateString()} - ${date.toLocaleTimeString()}</div>
+                <div class="credit-items-list">
+                    ${acc.items.map(item => `<span>${item.qty}x</span> ${item.name}`).join('<br>')}
+                </div>
+                <div class="credit-actions">
+                    <button class="btn-primary" onclick="markCreditAsPaid(${acc.id})"><i class="ti ti-cash"></i> Mark as Paid</button>
+                </div>
+            </div>
+            `;
+        }).join('');
+        enableTapFeedback('.btn-primary');
+    }
+
+    function markCreditAsPaid(accountId) {
+        const account = creditAccounts.find(acc => acc.id === accountId);
+        if (!account) return;
+
+        if (confirm(`Mark ${account.customerName}'s debt of ${formatPHP.format(account.totalAmount)} as paid?`)) {
+            account.status = 'paid';
+            account.paidTimestamp = new Date().toISOString();
+
+            // REALIZED REVENUE: Now add to transactions and sales history
+            transactions.push({
+                id: account.id, timestamp: account.paidTimestamp,
+                items: account.items.map(l => ({ productId: l.productId, name: l.name, qty: l.qty, price: l.price })),
+                totalRevenue: account.totalAmount, totalProfit: account.totalProfit,
+                notes: `Paid off credit from ${new Date(account.timestamp).toLocaleDateString()}`
+            });
+            for (const l of account.items) {
+                for (let i = 0; i < l.qty; i++) {
+                    salesHistory.push({
+                        transactionId: account.id, productId: l.productId, productName: l.name,
+                        sellingPrice: l.price, costPrice: l.costPrice, profit: l.price - l.costPrice,
+                        timestamp: account.paidTimestamp
+                    });
+                }
+            }
+            logActivity('credit_paid', `Marked credit for '${account.customerName}' as paid (${formatPHP.format(account.totalAmount)}).`, { customerName: account.customerName, totalAmount: account.totalAmount });
+            saveData();
+            loadCreditTab();
+            updateStats();
+            showFeedback('Credit marked as paid.');
+        }
+    }
+
+    // --- ACTIVITY LOG ---
+    function logActivity(type, message, details = {}) {
+        activityLog.unshift({
+            timestamp: new Date().toISOString(),
+            type, // 'sale', 'add', 'update', 'credit_add', 'credit_paid', 'delete'
+            message,
+            details
+        });
+        if (activityLog.length > 200) { // Keep log from getting too big
+            activityLog.pop();
+        }
+    }
+
+    function loadHistoryTab() {
+        const container = document.getElementById('activityLogList');
+        if (activityLog.length === 0) {
+            container.innerHTML = `<div class="empty-state">
+                <div class="empty-state-icon"><i class="ti ti-history"></i></div>
+                <p>No activity recorded yet. Start selling or adding products!</p>
+            </div>`;
+            return;
+        }
+
+        container.innerHTML = activityLog.map(log => {
+            const icons = {
+                sale: 'ti-cash',
+                add: 'ti-package',
+                update: 'ti-edit',
+                credit_add: 'ti-notebook',
+                credit_paid: 'ti-receipt-2',
+                delete: 'ti-trash'
+            };
+            const icon = icons[log.type] || 'ti-file-info';
+            const iconClass = `log-icon-${log.type}`;
+
+            return `
+            <div class="log-item">
+                <div class="log-icon ${iconClass}">
+                    <i class="ti ${icon}"></i>
+                </div>
+                <div>
+                    <div class="log-message">${log.message}</div>
+                    <div class="log-timestamp">${formatRelativeTime(log.timestamp)}</div>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    function formatRelativeTime(isoString) {
+        const date = new Date(isoString);
+        const now = new Date();
+        const diff = now - date;
+        const diffSeconds = Math.floor(diff / 1000);
+        const diffMinutes = Math.floor(diffSeconds / 60);
+        const diffHours = Math.floor(diffMinutes / 60);
+        const diffDays = Math.floor(diffHours / 24);
+
+        if (diffSeconds < 60) return 'Just now';
+        if (diffMinutes < 60) return `${diffMinutes}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays === 1) return 'Yesterday';
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return date.toLocaleDateString(navigator.language || 'en-US');
+    }
+
+    // Stats and Insights
+    function updateStats() {
+      document.getElementById('totalProducts').textContent = inventory.length;
+      document.getElementById('settingsTotalProducts').textContent = inventory.length;
+      const today = new Date().toDateString();
+      const todaySales = salesHistory.filter(s => new Date(s.timestamp).toDateString() === today);
+      const todayRevenue = todaySales.reduce((sum, s) => sum + s.sellingPrice, 0);
+      const todayProfit = todaySales.reduce((sum, s) => sum + s.profit, 0);
+      document.getElementById('todaySales').textContent = todayRevenue.toFixed(2);
+      document.getElementById('todayProfit').textContent = todayProfit.toFixed(2);
+      
+      // Update credit stats
+      const unpaidAccounts = creditAccounts.filter(acc => acc.status === 'unpaid');
+      const totalCredit = unpaidAccounts.reduce((sum, acc) => sum + acc.totalAmount, 0);
+      document.getElementById('outstandingCredit').textContent = totalCredit.toFixed(2);
+      document.getElementById('outstandingCreditCount').textContent = unpaidAccounts.length;
+    }
+
+    function updateDashboard() {
+      const inventoryValue = inventory.reduce((sum, p) => sum + (p.stock * p.costPrice), 0);
+      document.getElementById('inventoryValue').textContent = inventoryValue.toFixed(2);
+
+      const profitByProduct = {};
+      inventory.forEach(p => {
+        const productSales = salesHistory.filter(s => s.productId === p.id);
+        const totalProfit = productSales.reduce((sum, s) => sum + s.profit, 0);
+        if (totalProfit > 0) profitByProduct[p.name] = totalProfit;
+      });
+      const sortedByProfit = Object.entries(profitByProduct).sort((a,b) => b[1] - a[1]);
+      if (sortedByProfit.length > 0) {
+        const [name, profit] = sortedByProfit[0];
+        document.getElementById('mostProfitable').textContent = name;
+        document.getElementById('profitableAmount').textContent = `${formatPHP.format(profit)} total profit`;
+      } else {
+        document.getElementById('mostProfitable').textContent = '--';
+        document.getElementById('profitableAmount').textContent = 'No sales yet';
+      }
+
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7*24*60*60*1000);
+      const salesByDay = {};
+      const formatter = new Intl.DateTimeFormat(navigator.language || 'en', { weekday: 'long' });
+      salesHistory.forEach(s => {
+        const d = new Date(s.timestamp);
+        if (d >= sevenDaysAgo) {
+          const dayName = formatter.format(d);
+          salesByDay[dayName] = (salesByDay[dayName] || 0) + 1;
+        }
+      });
+      const sortedDays = Object.entries(salesByDay).sort((a,b) => b[1]-a[1]);
+      if (sortedDays.length > 0) {
+        const [busiestDay, count] = sortedDays[0];
+        document.getElementById('busiestDay').textContent = busiestDay;
+        document.getElementById('busiestSales').textContent = `${count} sales`;
+      } else {
+        document.getElementById('busiestDay').textContent = '--';
+        document.getElementById('busiestSales').textContent = 'No sales this week';
+      }
+
+      const itemsAtRisk = inventory.filter(p => {
+          const pred = getProductPrediction(p);
+          return pred.dailyRate > 0 && p.stock <= pred.reorderPoint;
+      }).length;
+      document.getElementById('itemsAtRisk').textContent = itemsAtRisk;
+    }
+
+    function drawSalesChart() {
+      const chartContainer = document.getElementById('salesChart');
+      const now = new Date(); const dailyData = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now.getTime() - i*24*60*60*1000);
+        const dayStart = new Date(date.setHours(0,0,0,0));
+        const dayEnd = new Date(date.setHours(23,59,59,999));
+        const daySales = salesHistory.filter(s => {
+          const d = new Date(s.timestamp);
+          return d >= dayStart && d <= dayEnd;
+        });
+        const revenue = daySales.reduce((sum, s) => sum + s.sellingPrice, 0);
+        const profit = daySales.reduce((sum, s) => sum + s.profit, 0);
+        dailyData.push({ day: dayStart.toLocaleDateString(navigator.language || 'en', { weekday: 'short' }), revenue, profit });
+      }
+      const maxValue = Math.max(...dailyData.map(d => Math.max(d.revenue, d.profit)), 1);
+      chartContainer.innerHTML = dailyData.map(data => `
+        <div class="bar-group">
+          <div style="display: flex; gap: 2px; align-items: flex-end; height: 130px;">
+            <div class="bar" style="height: ${(data.revenue / maxValue * 120)}px; background: linear-gradient(to top, #667eea, #a78bfa); width: 15px;">
+              ${data.revenue > 0 ? `<div class="bar-value">${formatPHP.format(data.revenue)}</div>` : ''}
+            </div>
+            <div class="bar" style="height: ${(data.profit / maxValue * 120)}px; background: linear-gradient(to top, #10b981, #34d399); width: 15px;"></div>
+          </div>
+          <div class="bar-label">${data.day}</div>
+        </div>
+      `).join('');
+    }
+
+    // --- SHOPPING LIST LOGIC ---
+    function generateShoppingList() {
+        const candidates = inventory
+            .map(p => ({ product: p, prediction: getProductPrediction(p) }))
+            .filter(item => item.prediction.recommendedOrderQty > 0)
+            .sort((a, b) => b.prediction.priorityScore - a.prediction.priorityScore);
+
+        const shoppingList = [];
+        let remainingBudget = settings.shoppingBudget || 0;
+        let remainingSpace = settings.storageCapacity || 0;
+        let needCount = candidates.length;
+        let itemsSkipped = 0;
+
+        for (const candidate of candidates) {
+            const { product, prediction } = candidate;
+            const want = prediction.recommendedOrderQty;
+            const unitCost = product.costPrice;
+            const unitSpace = (CATEGORY_SIZES[product.category] || 3);
+
+            const maxByBudget = unitCost > 0 ? Math.floor(remainingBudget / unitCost) : want;
+            const maxBySpace = unitSpace > 0 ? Math.floor(remainingSpace / unitSpace) : want;
+            const canBuy = Math.max(0, Math.min(want, Math.floor(maxByBudget), Math.floor(maxBySpace)));
+
+            if (canBuy > 0) {
+                shoppingList.push({ product, finalOrderQty: canBuy, unitCost, unitSpace, prediction });
+                remainingBudget -= canBuy * unitCost;
+                remainingSpace -= canBuy * unitSpace;
+            } else {
+                itemsSkipped++;
+            }
+        }
+
+        const listEl = document.getElementById('shoppingList');
+        const summaryEl = document.getElementById('shoppingListSummary');
+
+        if (shoppingList.length > 0) {
+            listEl.innerHTML = shoppingList.map(item =>
+            `<strong>${item.product.name}</strong>: Buy <strong>${item.finalOrderQty}</strong> ` +
+            `<small>(Cost: ${formatPHP.format(item.finalOrderQty * item.unitCost)})</small>`
+            ).join('<br>');
+
+            const totalCost = (settings.shoppingBudget || 0) - remainingBudget;
+            const spaceUsed = (settings.storageCapacity || 0) - remainingSpace;
+            summaryEl.innerHTML =
+            `<strong>Total Cost:</strong> ${formatPHP.format(totalCost)} / ${formatPHP.format(settings.shoppingBudget || 0)}` +
+            `<br><strong>Space Used:</strong> ${spaceUsed.toFixed(0)} / ${settings.storageCapacity || 0} units` +
+            (itemsSkipped > 0 ? `<br><strong style="color:#ef4444;">${itemsSkipped} items partially/fully skipped due to constraints.</strong>` : '');
+        } else {
+            if (needCount > 0) {
+                listEl.innerHTML = `There are restock needs, but your budget or storage capacity prevented adding any items.`;
+                summaryEl.innerHTML =
+                    `<strong>Budget:</strong> ${formatPHP.format(settings.shoppingBudget || 0)} | ` +
+                    `<strong>Capacity:</strong> ${(settings.storageCapacity || 0)} units<br>` +
+                    `<strong>Tip:</strong> Increase budget/capacity in settings.`;
+            } else {
+                listEl.textContent = 'Stock levels are optimal. Nothing to buy yet!';
+                summaryEl.innerHTML = '';
+            }
+        }
+    }
+
+
+    function generateInsights() {
+      generateShoppingList();
+      const topSelling = [...inventory].filter(p => p.totalSold > 0).sort((a,b) => b.totalSold - a.totalSold).slice(0,3);
+      if (topSelling.length > 0) {
+        document.getElementById('topSelling').innerHTML = topSelling.map((p,i) => {
+          const avgDaily = getProductPrediction(p).dailyRate;
+          const totalProfit = p.totalSold * (p.sellingPrice - p.costPrice);
+          return `${i+1}. ${p.name} - ${p.totalSold} sold (${formatPHP.format(totalProfit)} profit, ~${avgDaily.toFixed(1)}/day)`;
+        }).join('<br>');
+      } else {
+        document.getElementById('topSelling').textContent = 'No sales data yet. Start selling to see insights!';
+      }
+
+      const profitable = [...inventory]
+        .filter(p => p.totalSold > 0)
+        .map(p => ({ name: p.name, profitMargin: (p.costPrice > 0) ? ((p.sellingPrice - p.costPrice)/p.costPrice*100) : 0, totalProfit: p.totalSold * (p.sellingPrice - p.costPrice) }))
+        .sort((a,b) => b.totalProfit - a.totalProfit)
+        .slice(0,3);
+      if (profitable.length > 0) {
+        document.getElementById('profitAnalysis').innerHTML = profitable.map(p => `${p.name}: ${p.profitMargin.toFixed(1)}% margin, ${formatPHP.format(p.totalProfit)} total profit`).join('<br>');
+      } else {
+        document.getElementById('profitAnalysis').textContent = 'Track your sales to see profit margins.';
+      }
+
+      const slow = inventory.filter(p => {
+        if (!p.lastSold && p.dateAdded) return Math.floor((new Date() - new Date(p.dateAdded))/(1000*60*60*24)) > 7;
+        if (p.lastSold) return Math.floor((new Date() - new Date(p.lastSold))/(1000*60*60*24)) > 7;
+        return false;
+      });
+      if (slow.length > 0) {
+        document.getElementById('slowMoving').innerHTML = slow.map(p => `${p.name} - ${p.stock} in stock (Consider promotions or discontinuing)`).join('<br>');
+      } else {
+        document.getElementById('slowMoving').textContent = 'All items are moving well!';
+      }
+
+      generateAIRecommendations();
+    }
+
+    function generateAIRecommendations() {
+      const recs = [];
+      const now = new Date(); const day = now.getDay(); const hour = now.getHours();
+      if (day === 5 || day === 6) recs.push('Weekend: Stock up on snacks and beverages');
+      if (day === 1) recs.push('Monday: Coffee and energy drinks sell well');
+      if (hour >= 6 && hour < 10) recs.push('Morning: Promote coffee and breakfast items');
+      else if (hour >= 15 && hour < 18) recs.push('Afternoon: Cold drinks and snacks peak time');
+      inventory.forEach(p => {
+        const rate = getProductPrediction(p).dailyRate;
+        const margin = (p.costPrice > 0) ? ((p.sellingPrice - p.costPrice)/p.costPrice*100) : 0;
+        if (margin > 50 && rate < 2) recs.push(`Promote ${p.name} - high margin but low sales`);
+        if (rate > 10) recs.push(`${p.name} is a bestseller - ensure stock!`);
+      });
+      const date = now.getDate();
+      if (date === 14 || date === 29) recs.push('Payday tomorrow! Stock up on premium items');
+      document.getElementById('aiRecommendations').innerHTML = recs.length ? recs.slice(0,4).join('<br>') : 'Smart suggestions will appear as you track more sales.';
+    }
+
+    // Add product / quick add
+    function addProduct() {
+      const category = document.getElementById('productCategory').value;
+      const name = document.getElementById('productName').value.trim();
+      const cost = parseFloat(document.getElementById('costPrice').value);
+      const selling = parseFloat(document.getElementById('sellingPrice').value);
+      const stock = parseInt(document.getElementById('initialStock').value);
+      if (!name || isNaN(cost) || isNaN(selling) || isNaN(stock)) { alert('Please fill all fields with valid numbers!'); return; }
+      const product = { id: Date.now(), category, name, costPrice: cost, sellingPrice: selling, stock, initialStock: stock, totalSold: 0, lastSold: null, dateAdded: new Date().toISOString() };
+      inventory.push(product);
+      logActivity('add', `Added '${name}' to inventory with ${stock} stock.`, { name, stock });
+      saveData(); loadInventory(); updateStats(); generateIntelligentAlerts();
+      document.getElementById('productName').value=''; document.getElementById('costPrice').value=''; document.getElementById('sellingPrice').value=''; document.getElementById('initialStock').value='';
+      document.querySelector('.tab').click();
+    }
+    
+    // --- REVISED QUICK ADD & CATEGORY TOGGLE ---
+    function toggleCategory(categoryName) {
+        const itemsDiv = document.getElementById(`cat-${categoryName}`);
+        if (itemsDiv) {
+            // Using 'grid' as the display value to match its original state
+            const isVisible = itemsDiv.style.display === 'grid';
+            itemsDiv.style.display = isVisible ? 'none' : 'grid';
+        }
+    }
+
+    function quickAddCat(name, cost, selling, category) {
+        // Pre-fill the main form
+        document.getElementById('productCategory').value = category;
+        document.getElementById('productName').value = name;
+        document.getElementById('costPrice').value = cost;
+        document.getElementById('sellingPrice').value = selling;
+        
+        const stockInput = document.getElementById('initialStock');
+        stockInput.value = ''; // Clear the stock
+        stockInput.focus(); // Focus for user input
+        
+        // Scroll to the form for better visibility
+        document.querySelector('.add-product-form').scrollIntoView({ behavior: 'smooth' });
+        showFeedback(`Pre-filled form for ${name}. Enter stock and add.`);
+    }
+
+    // Settings persistence
+    function updateSettings() { 
+        document.getElementById('settingsTotalProducts').textContent = inventory.length; 
+        checkDataStartDate();
+        loadPredictionSettings();
+    }
+    function checkDataStartDate() {
+      const firstDate = localStorage.getItem('tindatech_start_date');
+      if (!firstDate) localStorage.setItem('tindatech_start_date', new Date().toISOString());
+      const startDate = new Date(localStorage.getItem('tindatech_start_date'));
+      document.getElementById('dataStartDate').textContent = startDate.toLocaleDateString(navigator.language || 'en-US');
+    }
+    function loadPredictionSettings() {
+        document.getElementById('reviewPeriodDays').value = settings.reviewPeriodDays;
+        document.getElementById('safetyStockDays').value = settings.safetyStockDays;
+        document.getElementById('leadTimeDays').value = settings.leadTimeDays;
+        document.getElementById('shoppingBudget').value = settings.shoppingBudget;
+        document.getElementById('storageCapacity').value = settings.storageCapacity;
+    }
+    function savePredictionSettings() {
+        const review = parseInt(document.getElementById('reviewPeriodDays').value);
+        const safety = parseInt(document.getElementById('safetyStockDays').value);
+        const lead = parseInt(document.getElementById('leadTimeDays').value);
+        const budget = parseFloat(document.getElementById('shoppingBudget').value);
+        const capacity = parseInt(document.getElementById('storageCapacity').value);
+
+        if (isNaN(review) || isNaN(safety) || isNaN(lead) || isNaN(budget) || isNaN(capacity) || review < 1 || safety < 0 || lead < 0 || budget < 0 || capacity < 0) {
+            alert('Please enter valid, positive numbers for all settings.');
+            return;
+        }
+        settings.reviewPeriodDays = review;
+        settings.safetyStockDays = safety;
+        settings.leadTimeDays = lead;
+        settings.shoppingBudget = budget;
+        settings.storageCapacity = capacity;
+        saveData();
+        showFeedback('Prediction settings saved!');
+        // regenerate alerts and insights with new settings
+        generateIntelligentAlerts();
+        generateInsights();
+    }
+
+    // Persistence
+    function saveData() {
+      localStorage.setItem('tindatech_inventory', JSON.stringify(inventory));
+      localStorage.setItem('tindatech_sales', JSON.stringify(salesHistory));
+      localStorage.setItem('tindatech_transactions', JSON.stringify(transactions));
+      localStorage.setItem('tindatech_credit', JSON.stringify(creditAccounts));
+      localStorage.setItem('tindatech_activityLog', JSON.stringify(activityLog));
+      localStorage.setItem('tindatech_settings', JSON.stringify(settings));
+    }
+
+    // Export / Clear
+    function exportData() {
+      const data = { inventory, salesHistory, transactions, creditAccounts, activityLog, settings, exportDate: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = `tindatech_backup_${new Date().toISOString().split('T')[0]}.json`; a.click();
+    }
+    function clearAllData() {
+      if (confirm('Are you sure? This will delete all your data!')) {
+        if (confirm('This action cannot be undone. Continue?')) {
+          localStorage.clear(); // Clears everything for this domain
+          inventory = []; salesHistory = []; transactions = []; creditAccounts = []; activityLog = [];
+          settings = { 
+              reviewPeriodDays: 7, safetyStockDays: 3, leadTimeDays: 1, 
+              shoppingBudget: 5000, storageCapacity: 500 
+          };
+          location.reload();
+        }
+      }
+    }
+
+    // Feedback toast
+    function showFeedback(message) {
+      const feedback = document.createElement('div');
+      feedback.style.cssText = `
+        position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+        background: #10b981; color: white; padding: 15px 20px; border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 1200; animation: slideUp 0.3s ease, fadeOut 0.3s ease 2s;
+      `;
+      feedback.textContent = message;
+      document.body.appendChild(feedback);
+      setTimeout(() => feedback.remove(), 2300);
+    }
+
+    // Shortcuts
+    document.addEventListener('keydown', function(e) {
+      if (e.key === '/' && document.activeElement.tagName !== 'INPUT') { e.preventDefault(); document.getElementById('productSearch').focus(); }
+      if (e.key === 'Escape') {
+        if (manageModeActive) toggleManageMode();
+        if(document.getElementById('editProductModal').classList.contains('show')) closeEditModal();
+        if(isTransactionActive()) cancelTransaction();
+        
+        document.getElementById('productSearch').value = '';
+        currentSearchTerm = ''; currentCategoryFilter = 'all';
+        document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+        document.querySelector('.filter-chip').classList.add('active');
+        loadInventory();
+      }
+    });
+
+    // PWA install
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault(); deferredPrompt = e;
+      setTimeout(() => { document.getElementById('installPrompt').classList.add('show'); }, 30000);
+    });
+    function installPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => {
+          deferredPrompt = null; document.getElementById('installPrompt').classList.remove('show');
+        });
+      }
+    }
+
+    // Service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+          .then(() => console.log('ServiceWorker registration successful'))
+          .catch(err => console.log('ServiceWorker registration failed: ', err));
+      });
+    }
+  </script>
+</body>
+
+</html>
