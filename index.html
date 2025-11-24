@@ -938,22 +938,41 @@
           </div>
         </div>
 
-        <div id="settings" class="tab-content">
-          <div class="settings-section">
+      <!-- PHASE 1: Priority Alerts Dashboard (Optional - can be in Dashboard tab instead) -->
+        <div id="priority-alerts-container" style="margin-bottom: 20px;">
+            <!-- Priority alerts will be dynamically inserted here -->
+        </div>
+
+        <!-- Store Information Section (Your existing section) -->
+        <div class="settings-section">
             <div class="settings-title">Store Information</div>
             <div class="setting-item">
-              <span class="setting-label">Store Name</span>
-              <span class="setting-value">My Sari-Sari Store</span>
+                <span class="setting-label">Store Name</span>
+                <span class="setting-value">My Sari-Sari Store</span>
             </div>
             <div class="setting-item">
-              <span class="setting-label">Total Products</span>
-              <span class="setting-value" id="settingsTotalProducts">0</span>
+                <span class="setting-label">Total Products</span>
+                <span class="setting-value" id="settingsTotalProducts">0</span>
             </div>
             <div class="setting-item">
-              <span class="setting-label">Data Stored Since</span>
-              <span class="setting-value" id="dataStartDate">Today</span>
+                <span class="setting-label">Data Stored Since</span>
+                <span class="setting-value" id="dataStartDate">Today</span>
             </div>
-          </div>
+        </div>
+
+        <!-- Prediction & Shopping List Settings (Your existing section) -->
+        <div class="settings-section">
+            <div class="settings-title">Prediction & Shopping List Settings</div>
+            <div class="setting-item">
+                <label for="shoppingBudget" class="setting-label">Shopping Budget (₱)</label>
+                <input type="number" id="shoppingBudget" class="form-input setting-input">
+            </div>
+            <div class="setting-item">
+                <label for="storageCapacity" class="setting-label">Storage Capacity (units)</label>
+                <input type="number" id="storageCapacity" class="form-input setting-input">
+            </div>
+            <div class="setting-item">
+                <label for="reviewPeriodDays" class="setting-label">How often do you restock? (
 
           <div class="settings-section">
             <div class="settings-title">Prediction & Shopping List Settings</div>
@@ -2227,6 +2246,7 @@
       });
     }
   </script>
+  <script src="tindatech_phase1_complete.js"></script>
 </body>
 
 </html>
