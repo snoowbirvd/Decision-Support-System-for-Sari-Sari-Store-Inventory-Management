@@ -8,30 +8,34 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <!-- Tabler Icons webfont -->
   <link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <!-- Outfit variable font (weights 100-900) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
   <title>TindaTech - Smart Inventory for Sari-Sari Stores</title>
   <style>
     /* ===== Theme variables ===== */
     :root{
-      --bg:#fffdfc;
-      --text:#1f2937;
-      --muted:#8b949e;
-      --brand-1:#fbe2da;
-      --brand-2:#f6c7b9;
-      --brand-3:#f1b19d;
+      --bg:#fffdf3;
+      --text:#1f1a0f;
+      --muted:#7a6f54;
+      --brand-1:#fff6c2;
+      --brand-2:#fde58a;
+      --brand-3:#f7c948;
       --card:#ffffff;
-      --chip:#ffffff;
-      --chip-border:#f0d6cc;
-      --chip-active:#ffe9e1;
-      --chip-active-border:#f2b19d;
-      --accent:#e77a5e;
-      --shadow:0 14px 28px rgba(16,24,40,.08), 0 2px 4px rgba(16,24,40,.05);
-      --ring:0 0 0 3px rgba(231,122,94,.15);
+      --chip:#fffaf0;
+      --chip-border:#f3e2a3;
+      --chip-active:#fff0b3;
+      --chip-active-border:#e7c455;
+      --accent:#d49b00;
+      --shadow:0 14px 28px rgba(31,26,15,.08), 0 2px 4px rgba(31,26,15,.05);
+      --ring:0 0 0 3px rgba(212,155,0,.18);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
@@ -103,8 +107,8 @@
       padding: 6px 12px;
       margin: 18px 12px 0 12px;
       border-radius: 10px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
+      flex-wrap: wrap; /* Allow wrapping so all tabs are visible */
+      justify-content: center; /* Center tabs if they wrap */
     }
     .tabs::-webkit-scrollbar { display: none; }
     .tab {
@@ -118,7 +122,10 @@
       font-weight: 700;
       color: #5b5b5b;
       transition: all 0.2s ease;
+      min-width: 100px; /* Ensure tabs have a minimum width */
     }
+    .tab-icon { height: 18px; width: 18px; object-fit: contain; display: inline-block; }
+    .header-logo-icon { height: 28px; width: 28px; object-fit: contain; }
     .tab i { font-size: 1.1em; }
     .tab:hover { transform: translateY(-1px); }
     .tab.active {
@@ -126,6 +133,164 @@
       color: #7b3a2a;
       border-color: var(--chip-active-border);
       box-shadow: var(--ring);
+    }
+
+    /* --- Expiry & Decision Analysis Styles --- */
+    .expiry-alerts-container { margin-bottom: 20px; }
+    .expiry-alert-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      border-left: 4px solid;
+    }
+    .expiry-alert-item.alert-urgent {
+      background: #fef2f2;
+      border-left-color: #ef4444;
+    }
+    .expiry-alert-item.alert-warning {
+      background: #fffbeb;
+      border-left-color: #f59e0b;
+    }
+    .expiry-alert-item .alert-icon {
+      font-size: 1.5em;
+    }
+    .expiry-alert-item .alert-content { flex: 1; }
+    .expiry-alert-item .alert-product { font-weight: 700; }
+    .expiry-alert-item .alert-details { font-size: 0.85em; color: #6b7280; }
+    .expiry-alert-item .alert-action { font-size: 0.8em; font-weight: 600; margin-top: 4px; }
+
+    .priority-badge {
+      display: inline-block;
+      font-size: 0.7em;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      font-weight: 600;
+    }
+    .priority-high { background: #fee2e2; color: #dc2626; }
+    .priority-medium { background: #fef3c7; color: #d97706; }
+    .priority-low { background: #e0e7ff; color: #4f46e5; }
+
+    .expiry-badge {
+      display: inline-block;
+      font-size: 0.7em;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      font-weight: 600;
+    }
+    .expiry-urgent { background: #fee2e2; color: #dc2626; }
+    .expiry-warning { background: #fef3c7; color: #d97706; }
+    .expiry-fresh { background: #d1fae5; color: #059669; }
+
+    /* Decision Analysis Card */
+    .decision-card {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .decision-card-title {
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .decision-form { display: flex; flex-direction: column; gap: 10px; }
+    .decision-form .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .decision-form .form-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+    .decision-result {
+      background: white;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 10px;
+      border: 1px solid #e2e8f0;
+    }
+    .decision-result-header {
+      font-weight: 700;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .decision-metric {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      font-size: 0.9em;
+    }
+    .decision-metric-label { color: #64748b; }
+    .decision-metric-value { font-weight: 600; }
+    .decision-recommendation {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-align: center;
+    }
+    .decision-recommendation.positive { background: #d1fae5; color: #059669; }
+    .decision-recommendation.caution { background: #fef3c7; color: #d97706; }
+    .decision-recommendation.negative { background: #fee2e2; color: #dc2626; }
+
+    .payoff-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85em;
+      margin-top: 10px;
+    }
+    .payoff-table th, .payoff-table td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .payoff-table th {
+      background: #f8fafc;
+      font-weight: 600;
+    }
+
+    .markdown-analyzer {
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+    .markdown-analyzer-title {
+      font-weight: 700;
+      color: #d97706;
+      margin-bottom: 8px;
+    }
+    
+    /* Historical Data Notices */
+    .historical-data-notice {
+      background: #d1fae5;
+      border: 1px solid #6ee7b7;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.85em;
+      color: #047857;
+      margin-bottom: 12px;
+    }
+    .no-historical-data-notice {
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.85em;
+      color: #92400e;
+      margin-bottom: 12px;
     }
 
     /* --- Content --- */
@@ -517,10 +682,10 @@
     <div class="container">
       <div class="header">
         <div class="header-text">
-          <img src="logo.svg" alt="TindaTech" class="brand-logo">
+          <img src="icons/icons8-store-128.png" alt="TindaTech store" class="brand-logo header-logo-icon">
           <p>Smart Inventory for your store</p>
         </div>
-        <div class="header-icon" aria-hidden="true"><i class="ti ti-building-store"></i></div>
+        <div class="header-icon" aria-hidden="true"><img src="icons/icons8-store-128.png" alt="Store" class="header-logo-icon"></div>
 
         <!-- Date badge -->
         <div class="header-date" aria-label="Today">
@@ -546,19 +711,22 @@
 
       <div class="tabs" role="tablist" aria-label="Main sections">
         <button class="tab active" onclick="switchTab(event,'inventory')" role="tab" aria-selected="true">
-          <i class="ti ti-packages"></i> Inventory
+          <img src="icons/icons8-inventory-144.png" alt="Inventory" class="tab-icon"> Inventory
         </button>
         <button class="tab" onclick="switchTab(event,'insights')" role="tab" aria-selected="false">
-          <i class="ti ti-chart-bar"></i> Dashboard
+          <img src="icons/icons8-144_dashboard.png" alt="Dashboard" class="tab-icon"> Dashboard
         </button>
         <button class="tab" onclick="switchTab(event,'history')" role="tab" aria-selected="false">
-          <i class="ti ti-history"></i> History
+          <img src="icons/icons8-history-192.png" alt="History" class="tab-icon"> History
         </button>
         <button class="tab" onclick="switchTab(event,'credit')" role="tab" aria-selected="false">
-          <i class="ti ti-notebook"></i> Credit
+          <img src="icons/icons8-credit-192.png" alt="Credit" class="tab-icon"> Credit
         </button>
         <button class="tab" onclick="switchTab(event,'add')" role="tab" aria-selected="false">
           <i class="ti ti-plus"></i> Add
+        </button>
+        <button class="tab" onclick="switchTab(event,'tools')" role="tab" aria-selected="false">
+          <img src="icons/icons8-tools%20analysis-144.png" alt="Tools" class="tab-icon"> Tools
         </button>
         <button class="tab" onclick="switchTab(event,'settings')" role="tab" aria-selected="false">
           <i class="ti ti-settings"></i> Settings
@@ -644,6 +812,12 @@
             </div>
           </div>
 
+          <!-- Expiry Alerts Section -->
+          <div id="expiryAlertsSection" class="expiry-alerts-container" style="display: none;">
+            <div class="insight-title"><i class="ti ti-calendar-due"></i> Expiry Alerts</div>
+            <div id="expiryAlertsList"></div>
+          </div>
+
           <div class="chart-container">
             <div class="chart-title"><i class="ti ti-chart-bar"></i> 7-Day Sales & Profit Trend</div>
             <div class="bar-chart" id="salesChart"></div>
@@ -726,6 +900,10 @@
             <div class="form-group">
               <label class="form-label">Initial Stock</label>
               <input type="number" id="initialStock" class="form-input" placeholder="10" min="0" inputmode="numeric">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Expiry Date (Optional)</label>
+              <input type="date" id="expiryDate" class="form-input">
             </div>
             <button class="btn-primary" onclick="addProduct()"><i class="ti ti-plus"></i> Add Product</button>
           </div>
@@ -938,75 +1116,184 @@
           </div>
         </div>
 
-      <!-- PHASE 1: Priority Alerts Dashboard (Optional - can be in Dashboard tab instead) -->
-        <div id="priority-alerts-container" style="margin-bottom: 20px;">
-            <!-- Priority alerts will be dynamically inserted here -->
-        </div>
+        <!-- Tools Tab -->
+        <div id="tools" class="tab-content">
+          <h3 style="margin-bottom: 15px; color: #1e293b;"><i class="ti ti-tools"></i> Decision Analysis Tools</h3>
+          <p style="font-size: 0.9em; color: #64748b; margin-bottom: 20px;">Use these tools to make data-driven decisions for your store.</p>
 
-        <!-- Store Information Section (Your existing section) -->
-        <div class="settings-section">
+          <!-- New Product Evaluator -->
+          <div class="decision-card">
+            <div class="decision-card-title"><i class="ti ti-chart-dots"></i> New Product Evaluator</div>
+            <p style="font-size: 0.85em; color: #64748b; margin-bottom: 12px;">Evaluate if a new product is worth stocking using scenario analysis.</p>
+            
+            <!-- Historical Data Notice -->
+            <div id="historicalDataNotice" class="historical-data-notice" style="display: none;">
+              <i class="ti ti-database"></i> <strong>Historical data available!</strong> Demand scenarios have been pre-filled based on similar products in your inventory.
+            </div>
+            <div id="noHistoricalDataNotice" class="no-historical-data-notice">
+              <i class="ti ti-alert-circle"></i> <strong>No historical data available.</strong> Enter your own demand and probability estimates to analyze.
+            </div>
+            
+            <div class="decision-form" id="newProductEvaluatorForm">
+              <div class="form-row">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label">Product Name</label>
+                  <input type="text" id="evalProductName" class="form-input" placeholder="e.g., Korean Ramen" oninput="checkHistoricalData()">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label">Category</label>
+                  <select id="evalCategory" class="form-input" onchange="checkHistoricalData()">
+                    <option value="">-- Select Category --</option>
+                    <option value="beverages">Beverages</option>
+                    <option value="noodles">Noodles</option>
+                    <option value="snacks">Snacks</option>
+                    <option value="canned">Canned Goods</option>
+                    <option value="coffee">Coffee & Tea</option>
+                    <option value="dairy">Dairy & Eggs</option>
+                    <option value="condiments">Condiments</option>
+                    <option value="personal">Personal Care</option>
+                    <option value="firstaid">First Aid</option>
+                    <option value="household">Household</option>
+                    <option value="candy">Candy & Sweets</option>
+                    <option value="cigarettes">Cigarettes</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label">Initial Stock Qty</label>
+                  <input type="number" id="evalInitialQty" class="form-input" placeholder="20">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label">Cost Price (₱)</label>
+                  <input type="number" id="evalCostPrice" class="form-input" placeholder="25">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label">Selling Price (₱)</label>
+                  <input type="number" id="evalSellingPrice" class="form-input" placeholder="35">
+                </div>
+              </div>
+              <div style="font-size: 0.85em; color: #374151; font-weight: 600; margin-top: 12px;">Weekly Demand Scenarios:</div>
+              <div class="form-row-3">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 0.75em;">High Demand</label>
+                  <input type="number" id="evalHighDemand" class="form-input" placeholder="50" style="font-size: 0.85em;">
+                  <label class="form-label" style="font-size: 0.7em; margin-top: 4px;">Probability %</label>
+                  <input type="number" id="evalHighProb" class="form-input" placeholder="20" style="font-size: 0.85em;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 0.75em;">Medium Demand</label>
+                  <input type="number" id="evalMedDemand" class="form-input" placeholder="20" style="font-size: 0.85em;">
+                  <label class="form-label" style="font-size: 0.7em; margin-top: 4px;">Probability %</label>
+                  <input type="number" id="evalMedProb" class="form-input" placeholder="60" style="font-size: 0.85em;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 0.75em;">Low Demand</label>
+                  <input type="number" id="evalLowDemand" class="form-input" placeholder="5" style="font-size: 0.85em;">
+                  <label class="form-label" style="font-size: 0.7em; margin-top: 4px;">Probability %</label>
+                  <input type="number" id="evalLowProb" class="form-input" placeholder="20" style="font-size: 0.85em;">
+                </div>
+              </div>
+              <button class="btn-primary" onclick="runNewProductEvaluation()" style="margin-top: 12px;"><i class="ti ti-calculator"></i> Evaluate Product</button>
+            </div>
+            <div id="newProductResult" style="display: none;"></div>
+          </div>
+
+          <!-- Markdown Decision Analyzer -->
+          <div class="decision-card">
+            <div class="decision-card-title"><i class="ti ti-discount-2"></i> Markdown Decision Analyzer</div>
+            <p style="font-size: 0.85em; color: #64748b; margin-bottom: 12px;">Analyze optimal markdown strategy for near-expiry items in your inventory.</p>
+            <div id="markdownAnalyzerSection">
+              <div id="markdownAnalyzerList"></div>
+              <div id="noMarkdownItems" style="text-align: center; padding: 20px; color: #64748b;">
+                <i class="ti ti-check-circle" style="font-size: 2em; display: block; margin-bottom: 10px; color: #10b981;"></i>
+                No near-expiry items found. Products with expiry dates within 30 days will appear here for markdown analysis.
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Analysis Summary -->
+          <div class="decision-card" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-color: #6ee7b7;">
+            <div class="decision-card-title" style="color: #059669;"><i class="ti ti-info-circle"></i> How to Use These Tools</div>
+            <div style="font-size: 0.85em; color: #047857;">
+              <p><strong>New Product Evaluator:</strong> Enter product details and demand scenarios. The tool calculates Expected Value (EV) and risk to help you decide if stocking a new product is worthwhile.</p>
+              <p style="margin-top: 8px;"><strong>Markdown Analyzer:</strong> Automatically analyzes products nearing expiry and suggests optimal discount strategies to minimize losses.</p>
+              <p style="margin-top: 8px;"><strong>Tip:</strong> The more sales data you have, the better the historical predictions become!</p>
+            </div>
+          </div>
+        </div>
+        <!-- END Tools Tab -->
+
+        <!-- NEW CODE - Settings Tab (Properly Wrapped) -->
+        <div id="settings" class="tab-content">
+          <!-- Store Information Section -->
+          <div class="settings-section">
             <div class="settings-title">Store Information</div>
             <div class="setting-item">
-                <span class="setting-label">Store Name</span>
-                <span class="setting-value">My Sari-Sari Store</span>
+              <span class="setting-label">Store Name</span>
+              <span class="setting-value">My Sari-Sari Store</span>
             </div>
             <div class="setting-item">
-                <span class="setting-label">Total Products</span>
-                <span class="setting-value" id="settingsTotalProducts">0</span>
+              <span class="setting-label">Total Products</span>
+              <span class="setting-value" id="settingsTotalProducts">0</span>
             </div>
             <div class="setting-item">
-                <span class="setting-label">Data Stored Since</span>
-                <span class="setting-value" id="dataStartDate">Today</span>
+              <span class="setting-label">Data Stored Since</span>
+              <span class="setting-value" id="dataStartDate">Today</span>
             </div>
-        </div>
+          </div>
 
-        <!-- Prediction & Shopping List Settings (Your existing section) -->
-        <div class="settings-section">
-            <div class="settings-title">Prediction & Shopping List Settings</div>
-            <div class="setting-item">
-                <label for="shoppingBudget" class="setting-label">Shopping Budget (₱)</label>
-                <input type="number" id="shoppingBudget" class="form-input setting-input">
-            </div>
-            <div class="setting-item">
-                <label for="storageCapacity" class="setting-label">Storage Capacity (units)</label>
-                <input type="number" id="storageCapacity" class="form-input setting-input">
-            </div>
-            <div class="setting-item">
-                <label for="reviewPeriodDays" class="setting-label">How often do you restock? (
-
+          <!-- Prediction & Shopping List Settings -->
           <div class="settings-section">
             <div class="settings-title">Prediction & Shopping List Settings</div>
-             <div class="setting-item">
+            <div class="setting-item">
+              <label for="forecastingMethod" class="setting-label">Forecasting Method</label>
+              <select id="forecastingMethod" class="form-input setting-input">
+                <option value="exponential">Exponential Smoothing</option>
+                <option value="movingAverage">Simple Moving Average</option>
+              </select>
+            </div>
+            <div class="setting-item">
               <label for="shoppingBudget" class="setting-label">Shopping Budget (₱)</label>
               <input type="number" id="shoppingBudget" class="form-input setting-input">
             </div>
-            <div class="setting-item">
+            <div class="setting-item" style="display: none;">
               <label for="storageCapacity" class="setting-label">Storage Capacity (units)</label>
               <input type="number" id="storageCapacity" class="form-input setting-input">
             </div>
-             <div class="setting-item">
+            <div class="setting-item">
               <label for="reviewPeriodDays" class="setting-label">How often do you restock? (days)</label>
               <input type="number" id="reviewPeriodDays" class="form-input setting-input">
             </div>
-             <div class="setting-item">
+            <div class="setting-item">
               <label for="safetyStockDays" class="setting-label">Safety stock buffer (days)</label>
               <input type="number" id="safetyStockDays" class="form-input setting-input">
             </div>
-             <div class="setting-item">
+            <div class="setting-item">
               <label for="leadTimeDays" class="setting-label">Supplier lead time (days)</label>
               <input type="number" id="leadTimeDays" class="form-input setting-input">
             </div>
             <div style="text-align:right; margin-top:15px;">
-                <button class="btn-primary" onclick="savePredictionSettings()"><i class="ti ti-device-floppy"></i> Save Settings</button>
+              <button class="btn-primary" onclick="savePredictionSettings()"><i class="ti ti-device-floppy"></i> Save Settings</button>
             </div>
           </div>
 
-          <div class="settings-section" style="display:flex; flex-direction:column; gap:10px;">
-            <button class="btn-primary" onclick="exportData()"><i class="ti ti-download"></i> Export Data</button>
-            <button class="btn-danger" onclick="clearAllData()"><i class="ti ti-trash"></i> Clear All Data</button>
+          <!-- Data Management -->
+          <div class="settings-section">
+            <div class="settings-title">Data Management</div>
+            <div class="setting-item">
+              <span class="setting-label">Export All Data</span>
+              <button class="btn-secondary" onclick="exportData()"><i class="ti ti-download"></i> Export JSON</button>
+            </div>
+            <div class="setting-item">
+              <span class="setting-label">Clear All Data</span>
+              <button class="btn-danger" onclick="confirmClearData()"><i class="ti ti-trash"></i> Clear Data</button>
+            </div>
           </div>
         </div>
-      </div>
+        <!-- END Settings Tab -->
+
+      </div> <!-- End .content -->
     </div>
   </div>
 
@@ -1038,6 +1325,10 @@
          <div class="form-group">
           <label class="form-label">Max Stock (Optional)</label>
           <input type="number" id="editMaxStock" class="form-input" min="0" inputmode="numeric" placeholder="e.g., 50">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Expiry Date (Optional)</label>
+          <input type="date" id="editExpiryDate" class="form-input">
         </div>
         <div class="modal-actions">
           <button class="btn-danger" onclick="deleteProduct()"><i class="ti ti-trash"></i> Delete</button>
@@ -1087,8 +1378,11 @@
         safetyStockDays: 3,
         leadTimeDays: 1,
         shoppingBudget: 5000,
-        storageCapacity: 500
+        storageCapacity: 500,
+        forecastingMethod: 'exponential'
     };
+    // Ensure forecastingMethod exists for older data
+    if (!settings.forecastingMethod) settings.forecastingMethod = 'exponential';
     let alerts = [];
     let deferredPrompt;
 
@@ -1124,10 +1418,12 @@
       loadInventory();
       updateStats();
       generateIntelligentAlerts();
+      generateExpiryAlerts();
       generateInsights();
       updateDashboard();
       checkDataStartDate();
       loadCreditTab();
+      updateMarkdownAnalyzer();
 
       // Enable tap feedback baseline
       enableTapFeedback('.filter-chip, .quick-item-btn, .tab, .btn-action, .quick-sell-btn, .btn-primary, .btn-secondary, .btn-warning, .btn-danger');
@@ -1163,6 +1459,7 @@
         else if (tabName === 'settings') { updateSettings(); }
         else if (tabName === 'credit') { loadCreditTab(); }
         else if (tabName === 'history') { loadHistoryTab(); }
+        else if (tabName === 'tools') { updateMarkdownAnalyzer(); }
     }
     
     // --- ROBUST FORECASTING LOGIC ---
@@ -1245,9 +1542,496 @@
             reorderPoint,
             daysUntilStockout,
             recommendedOrderQty: Math.ceil(orderQty),
-            priorityScore: rate * (product.sellingPrice - product.costPrice) // Potential daily profit
+            priorityScore: calculatePriorityScore(product, rate) // Enhanced priority with expiry
         };
     }
+
+    // =============================================
+    // ENHANCED ALGORITHMS (THEORY-ALIGNED)
+    // =============================================
+
+    // Helper: Get days until product expiry
+    function getDaysUntilExpiry(expiryDateString) {
+        if (!expiryDateString) return Infinity;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const expiry = new Date(expiryDateString);
+        return Math.floor((expiry - today) / (1000 * 60 * 60 * 24));
+    }
+
+    // 1.1: Formalized Forecasting Module (Exponential Smoothing & Moving Average)
+    function forecastDemand(product, reviewDays = 7) {
+        const alpha = 0.3; // Smoothing factor
+        const salesData = getSalesByDay(product.id, reviewDays);
+        
+        if (settings.forecastingMethod === 'movingAverage') {
+            // Simple Moving Average
+            const total = salesData.reduce((sum, s) => sum + s, 0);
+            return Math.round((total / reviewDays) * 7); // Weekly forecast
+        } else {
+            // Exponential Smoothing (default)
+            if (salesData.length < 2) return (product.totalSold / Math.max(1, getDaysActive(product))) * 7 || 0;
+            
+            let forecast = salesData[salesData.length - 1]; // Start with oldest
+            for (let i = salesData.length - 2; i >= 0; i--) {
+                forecast = alpha * salesData[i] + (1 - alpha) * forecast;
+            }
+            return Math.round(forecast * 7); // Weekly forecast
+        }
+    }
+
+    function getDaysActive(product) {
+        if (!product.dateAdded) return 1;
+        return Math.max(1, Math.floor((new Date() - new Date(product.dateAdded)) / (1000*60*60*24)));
+    }
+
+    // 1.2: Enhanced Priority Score with Expiry Penalty (ABC Classification)
+    function calculatePriorityScore(product, rate = null) {
+        const dailyRate = rate !== null ? rate : calculateRobustRate(product);
+        const daysTracked = getDaysActive(product);
+        const velocity = product.totalSold / daysTracked;
+        const marginPercent = product.sellingPrice > 0 ? 
+            ((product.sellingPrice - product.costPrice) / product.sellingPrice) * 100 : 0;
+        const turnover = product.totalSold / Math.max(product.stock || 1, 1);
+        
+        // Expiry penalty calculation
+        let expiryPenalty = 0;
+        if (product.expiryDate) {
+            const daysLeft = getDaysUntilExpiry(product.expiryDate);
+            if (daysLeft <= 0) {
+                expiryPenalty = -100; // Expired - severe penalty
+            } else if (daysLeft <= 7) {
+                expiryPenalty = -50; // Expiring very soon
+            } else if (daysLeft <= 30) {
+                expiryPenalty = -10; // Expiring this month
+            }
+        }
+        
+        return (velocity * 10) + (marginPercent * 2) + (turnover * 5) + expiryPenalty;
+    }
+
+    // 1.3: Get Purchase Reason for Shopping List
+    function getPurchaseReason(product) {
+        const daysLeft = getDaysUntilExpiry(product.expiryDate);
+        const velocity = product.totalSold / getDaysActive(product);
+        
+        if (daysLeft <= 7) return "⚠️ Near expiry - buy less";
+        if (velocity > 5) return "🔥 Fast-moving (High Priority)";
+        if (velocity > 2) return "📊 Steady seller (Medium)";
+        if (velocity > 0.5) return "📦 Regular stock";
+        return "📉 Slow mover (Low Priority)";
+    }
+
+    // Priority Badge Helper
+    function getPriorityBadge(priorityScore) {
+        if (priorityScore > 50) return '<span class="priority-badge priority-high">🔥 High</span>';
+        if (priorityScore > 20) return '<span class="priority-badge priority-medium">📊 Medium</span>';
+        return '<span class="priority-badge priority-low">📉 Low</span>';
+    }
+
+    // Expiry Badge Helper
+    function getExpiryBadge(daysLeft) {
+        if (!isFinite(daysLeft)) return '';
+        if (daysLeft <= 0) return '<span class="expiry-badge expiry-urgent">❌ Expired</span>';
+        if (daysLeft <= 7) return '<span class="expiry-badge expiry-urgent">🚨 ' + daysLeft + 'd left</span>';
+        if (daysLeft <= 30) return '<span class="expiry-badge expiry-warning">⚠️ ' + daysLeft + 'd left</span>';
+        return '<span class="expiry-badge expiry-fresh">✅ Fresh</span>';
+    }
+
+    // 3.2: Generate Expiry Alerts
+    function generateExpiryAlerts() {
+        const expiryAlerts = [];
+        
+        inventory.forEach(product => {
+            if (!product.expiryDate) return;
+            
+            const daysLeft = getDaysUntilExpiry(product.expiryDate);
+            
+            if (daysLeft <= 0) {
+                expiryAlerts.push({
+                    severity: 'urgent',
+                    productName: product.name,
+                    stock: product.stock,
+                    daysLeft: daysLeft,
+                    action: '❌ EXPIRED: Remove from display immediately!',
+                    colorClass: 'alert-urgent',
+                    productId: product.id
+                });
+            } else if (daysLeft <= 7) {
+                expiryAlerts.push({
+                    severity: 'urgent',
+                    productName: product.name,
+                    stock: product.stock,
+                    daysLeft: daysLeft,
+                    action: '🚨 URGENT: Markdown 50% or remove from display',
+                    colorClass: 'alert-urgent',
+                    productId: product.id
+                });
+            } else if (daysLeft <= 30) {
+                expiryAlerts.push({
+                    severity: 'warning',
+                    productName: product.name,
+                    stock: product.stock,
+                    daysLeft: daysLeft,
+                    action: '⚠️ Consider 20-30% markdown',
+                    colorClass: 'alert-warning',
+                    productId: product.id
+                });
+            }
+        });
+        
+        // Sort by urgency (most urgent first)
+        expiryAlerts.sort((a, b) => a.daysLeft - b.daysLeft);
+        
+        // Render expiry alerts
+        const section = document.getElementById('expiryAlertsSection');
+        const list = document.getElementById('expiryAlertsList');
+        
+        if (expiryAlerts.length > 0) {
+            section.style.display = 'block';
+            list.innerHTML = expiryAlerts.slice(0, 5).map(alert => `
+                <div class="expiry-alert-item ${alert.colorClass}">
+                    <div class="alert-icon">${alert.daysLeft <= 0 ? '❌' : alert.daysLeft <= 7 ? '🚨' : '⚠️'}</div>
+                    <div class="alert-content">
+                        <div class="alert-product">${alert.productName}</div>
+                        <div class="alert-details">${alert.stock} in stock • ${alert.daysLeft <= 0 ? 'Expired' : alert.daysLeft + ' days left'}</div>
+                        <div class="alert-action">${alert.action}</div>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            section.style.display = 'none';
+        }
+        
+        return expiryAlerts;
+    }
+
+    // 2.1: New Product Evaluator (Decision Analysis)
+    function evaluateNewProduct(productData, scenarios) {
+        const margin = productData.sellingPrice - productData.costPrice;
+        const initialInvestment = productData.initialQty * productData.costPrice;
+        
+        const results = scenarios.map(scenario => {
+            const unitsSold = Math.min(scenario.demand, productData.initialQty);
+            const revenue = unitsSold * productData.sellingPrice;
+            const unsold = productData.initialQty - unitsSold;
+            const unsoldLoss = unsold * productData.costPrice * 0.5; // Assume 50% loss on unsold
+            const profit = revenue - initialInvestment - unsoldLoss;
+            const weightedProfit = profit * scenario.probability;
+            
+            return {
+                scenario: scenario.label,
+                demand: scenario.demand,
+                probability: scenario.probability,
+                unitsSold: unitsSold,
+                profit: profit,
+                weightedProfit: weightedProfit
+            };
+        });
+        
+        // Calculate Expected Value
+        const expectedValue = results.reduce((sum, r) => sum + r.weightedProfit, 0);
+        
+        // Calculate Risk (Standard Deviation)
+        const variance = results.reduce((sum, r) => {
+            return sum + Math.pow(r.profit - expectedValue, 2) * r.probability;
+        }, 0);
+        const stdDev = Math.sqrt(variance);
+        
+        // Make Recommendation
+        let recommendation, riskLevel, recClass;
+        if (expectedValue > 100 && stdDev < 300) {
+            recommendation = "✅ STOCK IT - Good profit potential with manageable risk";
+            riskLevel = "Low Risk";
+            recClass = "positive";
+        } else if (expectedValue > 0) {
+            recommendation = "⚠️ STOCK SMALL QUANTITY - Positive EV but uncertain";
+            riskLevel = "Medium Risk";
+            recClass = "caution";
+        } else {
+            recommendation = "❌ SKIP - Negative expected value";
+            riskLevel = "High Risk";
+            recClass = "negative";
+        }
+        
+        return {
+            productName: productData.name,
+            expectedValue: expectedValue,
+            standardDeviation: stdDev,
+            riskLevel: riskLevel,
+            recommendation: recommendation,
+            recClass: recClass,
+            scenarioDetails: results,
+            initialInvestment: initialInvestment
+        };
+    }
+
+    // Check for Historical Data based on category or similar products
+    function checkHistoricalData() {
+        const category = document.getElementById('evalCategory').value;
+        const productName = document.getElementById('evalProductName').value.trim().toLowerCase();
+        const historicalNotice = document.getElementById('historicalDataNotice');
+        const noHistoricalNotice = document.getElementById('noHistoricalDataNotice');
+        
+        if (!category && !productName) {
+            historicalNotice.style.display = 'none';
+            noHistoricalNotice.style.display = 'block';
+            return;
+        }
+        
+        // Find similar products in inventory
+        let similarProducts = inventory.filter(item => {
+            const nameMatch = productName && item.name.toLowerCase().includes(productName);
+            const categoryMatch = category && item.category === category;
+            return nameMatch || categoryMatch;
+        });
+        
+        if (similarProducts.length === 0) {
+            historicalNotice.style.display = 'none';
+            noHistoricalNotice.style.display = 'block';
+            return;
+        }
+        
+        // Calculate average demand from similar products' sales history
+        let totalDemandData = [];
+        similarProducts.forEach(product => {
+            if (product.salesHistory && product.salesHistory.length > 0) {
+                totalDemandData = totalDemandData.concat(product.salesHistory);
+            }
+        });
+        
+        if (totalDemandData.length < 3) {
+            // Not enough historical data
+            historicalNotice.style.display = 'none';
+            noHistoricalNotice.style.display = 'block';
+            noHistoricalNotice.innerHTML = `<i class="ti ti-alert-circle"></i> <strong>Limited historical data.</strong> Found ${similarProducts.length} similar product(s) but need more sales history. Enter your own estimates below.`;
+            return;
+        }
+        
+        // Calculate demand scenarios from historical data
+        const avgDemand = totalDemandData.reduce((a, b) => a + b, 0) / totalDemandData.length;
+        const maxDemand = Math.max(...totalDemandData);
+        const minDemand = Math.min(...totalDemandData);
+        
+        // Calculate rough probability distribution
+        const highDemandThreshold = avgDemand * 1.5;
+        const lowDemandThreshold = avgDemand * 0.5;
+        
+        let highCount = 0, medCount = 0, lowCount = 0;
+        totalDemandData.forEach(d => {
+            if (d >= highDemandThreshold) highCount++;
+            else if (d <= lowDemandThreshold) lowCount++;
+            else medCount++;
+        });
+        
+        const total = totalDemandData.length;
+        const highProb = Math.round((highCount / total) * 100) || 15;
+        const medProb = Math.round((medCount / total) * 100) || 60;
+        const lowProb = Math.round((lowCount / total) * 100) || 25;
+        
+        // Pre-fill the form
+        document.getElementById('evalHighDemand').value = Math.round(maxDemand);
+        document.getElementById('evalHighProb').value = highProb;
+        document.getElementById('evalMedDemand').value = Math.round(avgDemand);
+        document.getElementById('evalMedProb').value = medProb;
+        document.getElementById('evalLowDemand').value = Math.round(minDemand);
+        document.getElementById('evalLowProb').value = lowProb;
+        
+        // Calculate average prices from similar products for suggestion
+        const avgCost = similarProducts.reduce((a, b) => a + b.costPrice, 0) / similarProducts.length;
+        const avgSelling = similarProducts.reduce((a, b) => a + b.sellingPrice, 0) / similarProducts.length;
+        
+        if (!document.getElementById('evalCostPrice').value) {
+            document.getElementById('evalCostPrice').value = Math.round(avgCost);
+        }
+        if (!document.getElementById('evalSellingPrice').value) {
+            document.getElementById('evalSellingPrice').value = Math.round(avgSelling);
+        }
+        
+        // Update notices
+        historicalNotice.style.display = 'block';
+        noHistoricalNotice.style.display = 'none';
+        historicalNotice.innerHTML = `<i class="ti ti-database"></i> <strong>Historical data available!</strong> Analyzed ${totalDemandData.length} sales records from ${similarProducts.length} similar product(s). Demand scenarios pre-filled.`;
+    }
+
+    // Run New Product Evaluation from UI
+    function runNewProductEvaluation() {
+        const name = document.getElementById('evalProductName').value.trim();
+        const initialQty = parseInt(document.getElementById('evalInitialQty').value) || 20;
+        const costPrice = parseFloat(document.getElementById('evalCostPrice').value);
+        const sellingPrice = parseFloat(document.getElementById('evalSellingPrice').value);
+        
+        const highDemand = parseInt(document.getElementById('evalHighDemand').value) || 50;
+        const highProb = (parseInt(document.getElementById('evalHighProb').value) || 20) / 100;
+        const medDemand = parseInt(document.getElementById('evalMedDemand').value) || 20;
+        const medProb = (parseInt(document.getElementById('evalMedProb').value) || 60) / 100;
+        const lowDemand = parseInt(document.getElementById('evalLowDemand').value) || 5;
+        const lowProb = (parseInt(document.getElementById('evalLowProb').value) || 20) / 100;
+        
+        if (!name || isNaN(costPrice) || isNaN(sellingPrice)) {
+            alert('Please fill in product name, cost price, and selling price.');
+            return;
+        }
+        
+        // Normalize probabilities
+        const totalProb = highProb + medProb + lowProb;
+        const scenarios = [
+            { label: "High Demand", demand: highDemand, probability: highProb / totalProb },
+            { label: "Medium Demand", demand: medDemand, probability: medProb / totalProb },
+            { label: "Low Demand", demand: lowDemand, probability: lowProb / totalProb }
+        ];
+        
+        const result = evaluateNewProduct({ name, initialQty, costPrice, sellingPrice }, scenarios);
+        
+        // Display result
+        const resultDiv = document.getElementById('newProductResult');
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `
+            <div class="decision-result">
+                <div class="decision-result-header">${result.productName} - Analysis</div>
+                <div class="decision-metric">
+                    <span class="decision-metric-label">Initial Investment:</span>
+                    <span class="decision-metric-value">${formatPHP.format(result.initialInvestment)}</span>
+                </div>
+                <div class="decision-metric">
+                    <span class="decision-metric-label">Expected Value:</span>
+                    <span class="decision-metric-value">${formatPHP.format(result.expectedValue)}</span>
+                </div>
+                <div class="decision-metric">
+                    <span class="decision-metric-label">Risk (Std Dev):</span>
+                    <span class="decision-metric-value">${formatPHP.format(result.standardDeviation)}</span>
+                </div>
+                <div class="decision-metric">
+                    <span class="decision-metric-label">Risk Level:</span>
+                    <span class="decision-metric-value">${result.riskLevel}</span>
+                </div>
+                
+                <table class="payoff-table">
+                    <tr><th>Scenario</th><th>Demand</th><th>Prob</th><th>Profit</th></tr>
+                    ${result.scenarioDetails.map(s => `
+                        <tr>
+                            <td>${s.scenario}</td>
+                            <td>${s.demand}</td>
+                            <td>${(s.probability * 100).toFixed(0)}%</td>
+                            <td>${formatPHP.format(s.profit)}</td>
+                        </tr>
+                    `).join('')}
+                </table>
+                
+                <div class="decision-recommendation ${result.recClass}">
+                    ${result.recommendation}
+                </div>
+            </div>
+        `;
+    }
+
+    // 2.2: Markdown Decision Analyzer
+    function evaluateMarkdownDecision(product) {
+        const daysLeft = getDaysUntilExpiry(product.expiryDate);
+        const currentStock = product.stock;
+        const costPrice = product.costPrice;
+        const sellingPrice = product.sellingPrice;
+        
+        // Define scenarios based on days left
+        let scenarios;
+        if (daysLeft <= 7) {
+            scenarios = [
+                { action: "Markdown 50% Now", discountPercent: 0.5, expectedSalesRate: 0.8, probability: 0.5 },
+                { action: "Markdown 30% Now", discountPercent: 0.3, expectedSalesRate: 0.5, probability: 0.3 },
+                { action: "No Markdown (Risk Loss)", discountPercent: 0, expectedSalesRate: 0.1, probability: 0.2 }
+            ];
+        } else {
+            scenarios = [
+                { action: "Markdown 30% Now", discountPercent: 0.3, expectedSalesRate: 0.7, probability: 0.5 },
+                { action: "Markdown 20% Now", discountPercent: 0.2, expectedSalesRate: 0.5, probability: 0.3 },
+                { action: "Wait & Monitor", discountPercent: 0, expectedSalesRate: 0.3, probability: 0.2 }
+            ];
+        }
+        
+        const results = scenarios.map(scenario => {
+            const discountedPrice = sellingPrice * (1 - scenario.discountPercent);
+            const expectedSales = Math.round(currentStock * scenario.expectedSalesRate);
+            const revenue = expectedSales * discountedPrice;
+            const unsold = currentStock - expectedSales;
+            const totalCost = currentStock * costPrice;
+            const netResult = revenue - totalCost;
+            const weightedResult = netResult * scenario.probability;
+            
+            return {
+                action: scenario.action,
+                discountPercent: (scenario.discountPercent * 100).toFixed(0) + '%',
+                expectedSales: expectedSales,
+                unsold: unsold,
+                revenue: revenue,
+                netResult: netResult,
+                weightedResult: weightedResult
+            };
+        });
+        
+        const expectedValue = results.reduce((sum, r) => sum + r.weightedResult, 0);
+        const bestAction = results.reduce((best, r) => r.weightedResult > best.weightedResult ? r : best);
+        
+        return {
+            productName: product.name,
+            productId: product.id,
+            daysUntilExpiry: daysLeft,
+            currentStock: currentStock,
+            recommendation: bestAction.action,
+            expectedValue: expectedValue,
+            scenarios: results
+        };
+    }
+
+    // Update Markdown Analyzer Section
+    function updateMarkdownAnalyzer() {
+        const nearExpiryProducts = inventory.filter(p => {
+            if (!p.expiryDate) return false;
+            const daysLeft = getDaysUntilExpiry(p.expiryDate);
+            return daysLeft > 0 && daysLeft <= 30 && p.stock > 0;
+        });
+        
+        const section = document.getElementById('markdownAnalyzerSection');
+        const list = document.getElementById('markdownAnalyzerList');
+        
+        if (nearExpiryProducts.length > 0) {
+            section.style.display = 'block';
+            
+            const analyses = nearExpiryProducts.slice(0, 3).map(p => evaluateMarkdownDecision(p));
+            
+            list.innerHTML = analyses.map(analysis => `
+                <div class="markdown-analyzer">
+                    <div class="markdown-analyzer-title">${analysis.productName} (${analysis.daysUntilExpiry}d left, ${analysis.currentStock} in stock)</div>
+                    <div class="decision-metric">
+                        <span class="decision-metric-label">Best Action:</span>
+                        <span class="decision-metric-value" style="color: #d97706;">${analysis.recommendation}</span>
+                    </div>
+                    <div class="decision-metric">
+                        <span class="decision-metric-label">Expected Value:</span>
+                        <span class="decision-metric-value">${formatPHP.format(analysis.expectedValue)}</span>
+                    </div>
+                    <details style="margin-top: 8px;">
+                        <summary style="cursor: pointer; font-size: 0.85em; color: #64748b;">View all scenarios</summary>
+                        <table class="payoff-table" style="margin-top: 8px;">
+                            <tr><th>Action</th><th>Exp. Sales</th><th>Net Result</th></tr>
+                            ${analysis.scenarios.map(s => `
+                                <tr>
+                                    <td>${s.action}</td>
+                                    <td>${s.expectedSales}/${analysis.currentStock}</td>
+                                    <td style="color: ${s.netResult >= 0 ? '#059669' : '#dc2626'};">${formatPHP.format(s.netResult)}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    </details>
+                </div>
+            `).join('');
+        } else {
+            section.style.display = 'none';
+        }
+    }
+
+    // =============================================
+    // END ENHANCED ALGORITHMS
+    // =============================================
 
     // --- REVISED ALERTS LOGIC ---
     function generateIntelligentAlerts() {
@@ -1282,7 +2066,7 @@
       const topSellers = [...inventory]
         .filter(p => p.stock > 0 && p.totalSold > 0)
         .sort((a,b) => getProductPrediction(b).dailyRate - getProductPrediction(a).dailyRate)
-        .slice(0,8);
+        .slice(0,3);
 
       if (topSellers.length > 0) {
         quickAccessSection.style.display = 'block';
@@ -1407,6 +2191,10 @@
             const daysLeft = isFinite(prediction.daysUntilStockout) ? `${prediction.daysUntilStockout} days supply` : 'Low sales';
             const predictionText = (prediction.dailyRate > 0.01) ? `📊 ~${prediction.dailyRate.toFixed(1)}/day • ${daysLeft}` : 'Low sales data';
             
+            // Expiry badge for product list
+            const expiryDaysLeft = product.expiryDate ? getDaysUntilExpiry(product.expiryDate) : Infinity;
+            const expiryBadgeHtml = product.expiryDate ? getExpiryBadge(expiryDaysLeft) : '';
+            
             let actionButton;
             if (manageModeActive) {
                 actionButton = `<button class="btn-action btn-edit" onclick="openEditModal(${product.id})" aria-label="Edit ${product.name}">
@@ -1425,6 +2213,7 @@
                   <div class="product-name">
                     ${stockWarningIcon} ${product.name}
                     <span class="profit-indicator ${profitClass}">${profitMargin}%</span>
+                    ${expiryBadgeHtml}
                     ${isFinite(prediction.daysUntilStockout) && prediction.daysUntilStockout <= settings.safetyStockDays ? `<span class="prediction-badge"><i class="ti ti-bolt"></i> ${prediction.daysUntilStockout}d left</span>` : ''}
                   </div>
                   <div class="product-details">
@@ -1509,6 +2298,7 @@
         document.getElementById('editSellingPrice').value = product.sellingPrice;
         document.getElementById('editStock').value = product.stock;
         document.getElementById('editMaxStock').value = product.maxStock || '';
+        document.getElementById('editExpiryDate').value = product.expiryDate || '';
         document.getElementById('editProductModal').classList.add('show');
     }
 
@@ -1530,6 +2320,8 @@
         product.stock = newStock;
         const maxStock = parseInt(document.getElementById('editMaxStock').value);
         product.maxStock = isNaN(maxStock) || maxStock <= 0 ? null : maxStock;
+        const expiryDate = document.getElementById('editExpiryDate').value;
+        product.expiryDate = expiryDate || null;
 
         if (!product.name || isNaN(product.costPrice) || isNaN(product.sellingPrice) || isNaN(product.stock)) {
             alert('Please fill all fields with valid values.');
@@ -1543,6 +2335,8 @@
         saveData();
         loadInventory();
         updateStats();
+        generateExpiryAlerts();
+        updateMarkdownAnalyzer();
         closeEditModal();
         showFeedback(`${product.name} updated.`);
     }
@@ -1961,7 +2755,7 @@
       `).join('');
     }
 
-    // --- SHOPPING LIST LOGIC ---
+    // --- SHOPPING LIST LOGIC (ENHANCED WITH GREEDY OPTIMIZATION) ---
     function generateShoppingList() {
         const candidates = inventory
             .map(p => ({ product: p, prediction: getProductPrediction(p) }))
@@ -1970,10 +2764,11 @@
 
         const shoppingList = [];
         let remainingBudget = settings.shoppingBudget || 0;
-        let remainingSpace = settings.storageCapacity || 0;
+        let remainingSpace = settings.storageCapacity || Infinity; // Make space optional
         let needCount = candidates.length;
         let itemsSkipped = 0;
 
+        // Greedy selection until budget exhausted
         for (const candidate of candidates) {
             const { product, prediction } = candidate;
             const want = prediction.recommendedOrderQty;
@@ -1985,36 +2780,52 @@
             const canBuy = Math.max(0, Math.min(want, Math.floor(maxByBudget), Math.floor(maxBySpace)));
 
             if (canBuy > 0) {
-                shoppingList.push({ product, finalOrderQty: canBuy, unitCost, unitSpace, prediction });
+                const reason = getPurchaseReason(product);
+                const priorityScore = prediction.priorityScore;
+                shoppingList.push({ 
+                    product, 
+                    finalOrderQty: canBuy, 
+                    unitCost, 
+                    unitSpace, 
+                    prediction,
+                    reason,
+                    priorityScore 
+                });
                 remainingBudget -= canBuy * unitCost;
                 remainingSpace -= canBuy * unitSpace;
             } else {
                 itemsSkipped++;
             }
+            
+            if (remainingBudget < 1) break; // Budget exhausted
         }
 
         const listEl = document.getElementById('shoppingList');
         const summaryEl = document.getElementById('shoppingListSummary');
 
         if (shoppingList.length > 0) {
-            listEl.innerHTML = shoppingList.map(item =>
-            `<strong>${item.product.name}</strong>: Buy <strong>${item.finalOrderQty}</strong> ` +
-            `<small>(Cost: ${formatPHP.format(item.finalOrderQty * item.unitCost)})</small>`
-            ).join('<br>');
+            // Enhanced display with priority badges and reasons
+            listEl.innerHTML = shoppingList.map(item => {
+                const priorityBadge = getPriorityBadge(item.priorityScore);
+                const expiryBadge = item.product.expiryDate ? getExpiryBadge(getDaysUntilExpiry(item.product.expiryDate)) : '';
+                return `<div style="margin-bottom: 8px; padding: 8px; background: #f8fafc; border-radius: 6px;">
+                    <strong>${item.product.name}</strong> ${priorityBadge} ${expiryBadge}<br>
+                    <span style="font-size: 0.9em;">Buy <strong>${item.finalOrderQty}</strong> units • ${formatPHP.format(item.finalOrderQty * item.unitCost)}</span><br>
+                    <small style="color: #64748b;">${item.reason}</small>
+                </div>`;
+            }).join('');
 
             const totalCost = (settings.shoppingBudget || 0) - remainingBudget;
-            const spaceUsed = (settings.storageCapacity || 0) - remainingSpace;
+            const budgetUtil = settings.shoppingBudget > 0 ? ((totalCost / settings.shoppingBudget) * 100).toFixed(1) : 0;
             summaryEl.innerHTML =
-            `<strong>Total Cost:</strong> ${formatPHP.format(totalCost)} / ${formatPHP.format(settings.shoppingBudget || 0)}` +
-            `<br><strong>Space Used:</strong> ${spaceUsed.toFixed(0)} / ${settings.storageCapacity || 0} units` +
-            (itemsSkipped > 0 ? `<br><strong style="color:#ef4444;">${itemsSkipped} items partially/fully skipped due to constraints.</strong>` : '');
+            `<strong>Total Cost:</strong> ${formatPHP.format(totalCost)} / ${formatPHP.format(settings.shoppingBudget || 0)} (${budgetUtil}% utilized)` +
+            (itemsSkipped > 0 ? `<br><span style="color:#ef4444;">${itemsSkipped} items skipped due to budget constraint.</span>` : '');
         } else {
             if (needCount > 0) {
-                listEl.innerHTML = `There are restock needs, but your budget or storage capacity prevented adding any items.`;
+                listEl.innerHTML = `There are restock needs, but your budget prevented adding any items.`;
                 summaryEl.innerHTML =
-                    `<strong>Budget:</strong> ${formatPHP.format(settings.shoppingBudget || 0)} | ` +
-                    `<strong>Capacity:</strong> ${(settings.storageCapacity || 0)} units<br>` +
-                    `<strong>Tip:</strong> Increase budget/capacity in settings.`;
+                    `<strong>Budget:</strong> ${formatPHP.format(settings.shoppingBudget || 0)}<br>` +
+                    `<strong>Tip:</strong> Increase budget in settings.`;
             } else {
                 listEl.textContent = 'Stock levels are optimal. Nothing to buy yet!';
                 summaryEl.innerHTML = '';
@@ -2086,12 +2897,13 @@
       const cost = parseFloat(document.getElementById('costPrice').value);
       const selling = parseFloat(document.getElementById('sellingPrice').value);
       const stock = parseInt(document.getElementById('initialStock').value);
+      const expiryDate = document.getElementById('expiryDate').value || null;
       if (!name || isNaN(cost) || isNaN(selling) || isNaN(stock)) { alert('Please fill all fields with valid numbers!'); return; }
-      const product = { id: Date.now(), category, name, costPrice: cost, sellingPrice: selling, stock, initialStock: stock, totalSold: 0, lastSold: null, dateAdded: new Date().toISOString() };
+      const product = { id: Date.now(), category, name, costPrice: cost, sellingPrice: selling, stock, initialStock: stock, totalSold: 0, lastSold: null, dateAdded: new Date().toISOString(), expiryDate: expiryDate };
       inventory.push(product);
       logActivity('add', `Added '${name}' to inventory with ${stock} stock.`, { name, stock });
-      saveData(); loadInventory(); updateStats(); generateIntelligentAlerts();
-      document.getElementById('productName').value=''; document.getElementById('costPrice').value=''; document.getElementById('sellingPrice').value=''; document.getElementById('initialStock').value='';
+      saveData(); loadInventory(); updateStats(); generateIntelligentAlerts(); generateExpiryAlerts(); updateMarkdownAnalyzer();
+      document.getElementById('productName').value=''; document.getElementById('costPrice').value=''; document.getElementById('sellingPrice').value=''; document.getElementById('initialStock').value=''; document.getElementById('expiryDate').value='';
       document.querySelector('.tab').click();
     }
     
@@ -2134,20 +2946,23 @@
       document.getElementById('dataStartDate').textContent = startDate.toLocaleDateString(navigator.language || 'en-US');
     }
     function loadPredictionSettings() {
-        document.getElementById('reviewPeriodDays').value = settings.reviewPeriodDays;
-        document.getElementById('safetyStockDays').value = settings.safetyStockDays;
-        document.getElementById('leadTimeDays').value = settings.leadTimeDays;
-        document.getElementById('shoppingBudget').value = settings.shoppingBudget;
-        document.getElementById('storageCapacity').value = settings.storageCapacity;
+        const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
+        setVal('reviewPeriodDays', settings.reviewPeriodDays);
+        setVal('safetyStockDays', settings.safetyStockDays);
+        setVal('leadTimeDays', settings.leadTimeDays);
+        setVal('shoppingBudget', settings.shoppingBudget);
+        setVal('storageCapacity', settings.storageCapacity);
+        setVal('forecastingMethod', settings.forecastingMethod || 'exponential');
     }
     function savePredictionSettings() {
         const review = parseInt(document.getElementById('reviewPeriodDays').value);
         const safety = parseInt(document.getElementById('safetyStockDays').value);
         const lead = parseInt(document.getElementById('leadTimeDays').value);
         const budget = parseFloat(document.getElementById('shoppingBudget').value);
-        const capacity = parseInt(document.getElementById('storageCapacity').value);
+        const capacity = parseInt(document.getElementById('storageCapacity').value) || 500;
+        const forecastingMethod = document.getElementById('forecastingMethod').value || 'exponential';
 
-        if (isNaN(review) || isNaN(safety) || isNaN(lead) || isNaN(budget) || isNaN(capacity) || review < 1 || safety < 0 || lead < 0 || budget < 0 || capacity < 0) {
+        if (isNaN(review) || isNaN(safety) || isNaN(lead) || isNaN(budget) || review < 1 || safety < 0 || lead < 0 || budget < 0) {
             alert('Please enter valid, positive numbers for all settings.');
             return;
         }
@@ -2156,11 +2971,14 @@
         settings.leadTimeDays = lead;
         settings.shoppingBudget = budget;
         settings.storageCapacity = capacity;
+        settings.forecastingMethod = forecastingMethod;
         saveData();
         showFeedback('Prediction settings saved!');
         // regenerate alerts and insights with new settings
         generateIntelligentAlerts();
+        generateExpiryAlerts();
         generateInsights();
+        updateMarkdownAnalyzer();
     }
 
     // Persistence
@@ -2187,11 +3005,16 @@
           inventory = []; salesHistory = []; transactions = []; creditAccounts = []; activityLog = [];
           settings = { 
               reviewPeriodDays: 7, safetyStockDays: 3, leadTimeDays: 1, 
-              shoppingBudget: 5000, storageCapacity: 500 
+              shoppingBudget: 5000, storageCapacity: 500, forecastingMethod: 'exponential'
           };
           location.reload();
         }
       }
+    }
+    
+    // Alias for settings button
+    function confirmClearData() {
+        clearAllData();
     }
 
     // Feedback toast
